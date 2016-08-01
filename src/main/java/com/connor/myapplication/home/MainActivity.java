@@ -128,16 +128,4 @@ public class MainActivity extends Activity {
 
     }
 
- /*   @Override
-    protected void onPause() {
-        super.onPause();
- //       PictureUtil.mStrideX = 0.05f;
- //       PictureUtil.mStrideY = 0.05f;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }*/
-
 }
