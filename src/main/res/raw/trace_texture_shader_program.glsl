@@ -8,7 +8,6 @@ void main()
 {
      vec3 textureColor =  texture2D(u_TextureUnit, v_TextureCoordinates).rgb;
      vec3 traceColor =  texture2D(u_TraceTextureUnit, v_TextureCoordinates).rgb;
-//     float gray = dot(tracecolor.rgb, vec3(0.299, 0.587, 0.114));
      float r = 0.0;
      float g = 0.0;
      float b = 0.0;

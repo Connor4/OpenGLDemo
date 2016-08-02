@@ -4,6 +4,7 @@ import android.opengl.GLSurfaceView;
 
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
+import com.connor.myapplication.home.FBOPoints;
 import com.connor.myapplication.home.OpenGLRenderer;
 import com.connor.myapplication.home.Points;
 
@@ -81,7 +82,7 @@ public class ObjectUtil {
      * @param y opengl坐标
      */
     private static void CreateAndAddPoint(float x, float y) {
-        Points points = new Points(new PointBean(x, y));
+        FBOPoints points = new FBOPoints(new PointBean(x, y));
         mRenderer.addMesh(points);
     }
 

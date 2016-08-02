@@ -18,8 +18,10 @@ import javax.microedition.khronos.opengles.GL10;
 
 import static android.opengl.GLES20.GL_BLEND;
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
+import static android.opengl.GLES20.GL_ONE;
 import static android.opengl.GLES20.GL_ONE_MINUS_SRC_ALPHA;
 import static android.opengl.GLES20.GL_SRC_ALPHA;
+import static android.opengl.GLES20.GL_ZERO;
 import static android.opengl.GLES20.glBlendFunc;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
@@ -45,7 +47,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private int mStarTexture;
     private int mDownStarTexture;
     private int mFramebuffer;
-    private boolean FIRST = true;
     private FBOArrayUtil mArrayUtil;
     private int mResourceId;
 
@@ -90,8 +91,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         //给撤销的用
         mArrayUtil = new FBOArrayUtil();
         //独立创建一个FBO给当前的用
-        mTargetTexture = mArrayUtil.createTargetTexture(Constant.mSurfaceViewWidth, Constant
-                .mSurfaceViewHeight);
+        mTargetTexture = mArrayUtil.createTargetTexture(Constant.TextureWidth, Constant
+                .TextureHeight);
         mFramebuffer = mArrayUtil.createFrameBuffer(mTargetTexture);
     }
 
@@ -99,6 +100,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
 //        glViewport(0, 0, Constant
 //                .mSurfaceViewWidth * 2, Constant.mSurfaceViewHeight * 2);
+        glViewport(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -134,6 +136,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
                 case Constant.WALLPAPER:
                     glEnable(GL_BLEND);//开启混合
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     mRoot.draw(Constant.OnScreen, mOtherProgram, mStarTexture);
                     glDisable(GL_BLEND);//关闭混合
                     break;
@@ -207,6 +210,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         glEnable(GL_BLEND);//开启混合
+        glBlendFunc(GL_ONE, GL_ZERO);
         //每次将相片跟笔画混合在一起
         mTraceProgram.useProgram();
         if (mDrawLast || mDrawNext) {
@@ -252,7 +256,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, FrameBuffer);
 
-        drawOffscreen(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
+        drawOffscreen(0, 0, Constant.TextureWidth, Constant.TextureHeight);
 
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, 0);
