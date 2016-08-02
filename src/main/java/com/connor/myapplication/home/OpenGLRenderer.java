@@ -93,7 +93,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mTargetTexture = mArrayUtil.createTargetTexture(Constant.mSurfaceViewWidth, Constant
                 .mSurfaceViewHeight);
         mFramebuffer = mArrayUtil.createFrameBuffer(mTargetTexture);
-
     }
 
     @Override

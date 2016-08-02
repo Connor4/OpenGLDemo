@@ -173,6 +173,9 @@ public class PictureUtil {
         return vertices;
     }
 
+    /**
+     * 计算比例，使笔触变圆
+     */
     private static void calculateStride() {
         float ratio = TextureHelper.getBitmapOptions();
         if (ratio > 1) {

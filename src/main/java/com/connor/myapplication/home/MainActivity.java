@@ -102,7 +102,7 @@ public class MainActivity extends Activity {
     }
 
     public void Undo(View view) {
-        int StepLeft = FBOArrayUtil.CheckLeft();
+        int StepLeft = FBOArrayUtil.CheckLeft();//看看还有没有得回退
         if (StepLeft != 1 ) {
             mRenderer.mDrawLast = true;
             mGLSurfaceView.requestRender();
