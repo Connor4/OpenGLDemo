@@ -45,7 +45,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private int mPointTexture;
     private int mTargetTexture;
     private int mReturnTexture;
-    private int mStarTexture;
     private int mDownStarTexture;
     private int mFramebuffer;
     private FBOArrayUtil mArrayUtil;
@@ -90,9 +89,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        //缩放用
-//        glViewport(0, 0, Constant
-//                .mSurfaceViewWidth * 2, Constant.mSurfaceViewHeight * 2);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -148,31 +144,31 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         switch (Constant.CURRENT_USE_TYPE) {
 
             case Constant.PAINT:
-                glEnable(GL_BLEND);//开启混合
+                glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 mRoot.draw(Constant.OffScreen, mPointProgram, mPointTexture);
-                glDisable(GL_BLEND);//关闭混合
+                glDisable(GL_BLEND);
                 break;
 
             case Constant.WALLPAPER:
-                glEnable(GL_BLEND);//开启混合
+                glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 mRoot.draw(Constant.OffScreen, mOtherProgram, mDownStarTexture);
-                glDisable(GL_BLEND);//关闭混合
+                glDisable(GL_BLEND);
                 break;
 
             case Constant.MOSAIC:
-                glEnable(GL_BLEND);//开启混合
+                glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 mRoot.drawMosaic(Constant.OffScreen, mEffectProgram, mTexture, mPointTexture);
-                glDisable(GL_BLEND);//关闭混合
+                glDisable(GL_BLEND);
                 break;
 
             case Constant.ERASER:
-                glEnable(GL_BLEND);//开启混合
+                glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 mRoot.draw(Constant.OffScreen, mEraserProgram, mPointTexture);
-                glDisable(GL_BLEND);//关闭混合
+                glDisable(GL_BLEND);
                 break;
             default:
                 break;
@@ -186,8 +182,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private void drawOnscreen() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        glEnable(GL_BLEND);//开启混合
-        glBlendFunc(GL_ONE, GL_ZERO);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //每次将相片跟笔画混合在一起
         mTraceProgram.useProgram();
         if (mDrawLast || mDrawNext) {
@@ -197,7 +194,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         }
         mBackGround.bindData(mTraceProgram);
         mBackGround.draw();
-        glDisable(GL_BLEND);//关闭混合
+        glDisable(GL_BLEND);
     }
 
     /**
@@ -217,7 +214,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      * 创建所需要的纹理
      */
     private void initTexture() {
-        mStarTexture = TextureHelper.loadTexture(mContext, R.drawable.images);
         mDownStarTexture = TextureHelper.loadTexture(mContext, R.drawable.downimages);
         mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
         mTexture = TextureHelper.loadTexture(mContext, mResourceId);
@@ -234,12 +230,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mRoot.clear();
     }
 
-    /**
-     * 添加给屏幕用的对象
-     */
-    public void addMesh(Mesh mesh) {
-        mRoot.addObject(mesh);
-    }
 
     /**
      * 添加给离屏渲染用的对象
