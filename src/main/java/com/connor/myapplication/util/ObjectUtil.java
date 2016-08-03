@@ -82,7 +82,7 @@ public class ObjectUtil {
      * @param y opengl坐标
      */
     private static void CreateAndAddPoint(float x, float y) {
-        FBOPoints points = new FBOPoints(new PointBean(x, y));
+        Points points = new Points(new PointBean(x, y));
         mRenderer.addMesh(points);
     }
 
@@ -93,7 +93,7 @@ public class ObjectUtil {
      * @param y opengl坐标
      */
     private static void CreateAndAddOppositePoint(float x, float y) {
-        Points points = new Points(new PointBean(x, y));
+        FBOPoints points = new FBOPoints(new PointBean(x, y));
         mRenderer.addOppositeMesh(points);
     }
 
