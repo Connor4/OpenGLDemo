@@ -4,7 +4,6 @@ import android.opengl.GLSurfaceView;
 
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
-import com.connor.myapplication.home.EffectPoints;
 import com.connor.myapplication.home.FBOEffectPoints;
 import com.connor.myapplication.home.FBOPoints;
 import com.connor.myapplication.home.OpenGLRenderer;
@@ -27,49 +26,32 @@ public class ObjectUtil {
         float glCoorX = CalculateCoordinateX(x);
         float glCoorY = CalculateCoordinateY(y);
         float glOppositeX = CalculateOppositeCoordinateX(glCoorX);
-        float glOppositeY = CalculateOppositeCoordinateY(-glCoorY);//取相反的给FBO
+        float glOppositeY = CalculateOppositeCoordinateY(-glCoorY);
 
-        if (glCoorX != 2 & glCoorY != 2) {//不在图片区域内的话，不添加到对象里面，不会去画
 
-            switch (Constant.CURRENT_USE_TYPE) {
-                case Constant.PAINT :
-                    CreateAndAddPoint(glCoorX, glCoorY);
-                    CreateAndAddOppositePoint(glOppositeX, glOppositeY);//FBO的需要取反
-                    break;
+        switch (Constant.CURRENT_USE_TYPE) {
+            case Constant.PAINT:
+                CreateAndAddOppositePoint(glOppositeX, glOppositeY);
+                break;
 
-                case Constant.WALLPAPER :
-                    CreateAndAddPoint(glCoorX, glCoorY);
-                    CreateAndAddOppositePoint(glOppositeX, glOppositeY);//FBO的需要取反
-                    break;
+            case Constant.WALLPAPER:
+                CreateAndAddOppositePoint(glOppositeX, glOppositeY);
+                break;
 
-                case Constant.MOSAIC:
-                    CreateAndAddEffect(glCoorX, glCoorY);
-                    CreateAndAddOppositeEffect(glOppositeX,glOppositeY);
-                    break;
+            case Constant.MOSAIC:
+                CreateAndAddOppositeEffect(glOppositeX, glOppositeY);
+                break;
 
-                case Constant.ERASER:
-                    CreateAndAddEraser(glCoorX, glCoorY);
-                    CreateAndAddOppositeEraser(glOppositeX, glOppositeY);
-                    break;
+            case Constant.ERASER:
+                CreateAndAddOppositeEraser(glOppositeX, glOppositeY);
+                break;
 
-                default:
-                    break;
-            }
-
-            mView.requestRender();
+            default:
+                break;
         }
+        mView.requestRender();
     }
 
-    /**
-     * 生成点对象并加入容器中
-     *
-     * @param x opengl坐标
-     * @param y opengl坐标
-     */
-    private static void CreateAndAddEraser(float x, float y) {
-        Points points = new Points(new PointBean(x, y));
-        mRenderer.addMesh(points);
-    }
 
     /**
      * 生成点对象并加入容器中
@@ -82,26 +64,12 @@ public class ObjectUtil {
         mRenderer.addOppositeMesh(points);
     }
 
-    private static void CreateAndAddEffect(float x, float y) {
-        EffectPoints points = new EffectPoints(new PointBean(x, y));
-        mRenderer.addMesh(points);
-    }
 
     private static void CreateAndAddOppositeEffect(float x, float y) {
         FBOEffectPoints points = new FBOEffectPoints(new PointBean(x, y));
         mRenderer.addOppositeMesh(points);
     }
 
-    /**
-     * 生成点对象并加入容器中
-     *
-     * @param x opengl坐标
-     * @param y opengl坐标
-     */
-    private static void CreateAndAddPoint(float x, float y) {
-        Points points = new Points(new PointBean(x, y));
-        mRenderer.addMesh(points);
-    }
 
     /**
      * 生成点对象并加入容器中
@@ -116,9 +84,7 @@ public class ObjectUtil {
 
 
     /**
-     * 弃用setLineCoordinate,用点代替线
-     *
-     * @param list
+     * 用点画线
      */
     public static void createBezierLine(ArrayList<PointBean> list) {
         ArrayList<PointBean> frontList = new ArrayList<>();
@@ -136,34 +102,14 @@ public class ObjectUtil {
             glLineOppositeCoorX = CalculateOppositeCoordinateX(glLineCoorX);
             glLineOppositeCoorY = CalculateOppositeCoordinateY(-glLineCoorY);//FBO的需要取反
 
-            if (glLineCoorX != 2 & glLineCoorY != 2) {
-                frontBean = new PointBean(glLineCoorX, glLineCoorY);
-                frontList.add(frontBean);
+            frontBean = new PointBean(glLineCoorX, glLineCoorY);
+            frontList.add(frontBean);
 
-                oppositeBean = new PointBean(glLineOppositeCoorX, glLineOppositeCoorY);
-                oppositeList.add(oppositeBean);
-            }
+            oppositeBean = new PointBean(glLineOppositeCoorX, glLineOppositeCoorY);
+            oppositeList.add(oppositeBean);
         }
 
-        if (!frontList.isEmpty() && !oppositeList.isEmpty()) {//画在区域外的由于前面的处理，list会为空
-            for (PointBean p : frontList) {
-                switch (Constant.CURRENT_USE_TYPE) {
-                    case Constant.PAINT:
-                        CreateAndAddPoint(p.getX(), p.getY());
-                        break;
-                    case Constant.WALLPAPER:
-                        CreateAndAddPoint(p.getX(), p.getY());
-                        break;
-                    case Constant.MOSAIC:
-                        CreateAndAddEffect(p.getX(), p.getY());
-                        break;
-                    case Constant.ERASER:
-                        CreateAndAddEraser(p.getX(), p.getY());
-                        break;
-                    default:
-                        break;
-                }
-            }
+        if (!frontList.isEmpty() && !oppositeList.isEmpty()) {
 
             for (PointBean p : oppositeList) {
                 switch (Constant.CURRENT_USE_TYPE) {
@@ -174,7 +120,7 @@ public class ObjectUtil {
                         CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     case Constant.MOSAIC:
-                        CreateAndAddOppositeEffect(p.getX(),p.getY());
+                        CreateAndAddOppositeEffect(p.getX(), p.getY());
                         break;
                     case Constant.ERASER:
                         CreateAndAddOppositeEraser(p.getX(), p.getY());
@@ -192,9 +138,6 @@ public class ObjectUtil {
      */
     private static float CalculateCoordinateX(float x) {
         float result = (x / (float) Constant.mSurfaceViewWidth) * 2 - 1;
-        if (Math.abs(result) > Constant.AreaWidth) {//判断是不是在区域内
-            result = 2;
-        }
 
         return result;
     }
@@ -204,15 +147,11 @@ public class ObjectUtil {
      */
     private static float CalculateCoordinateY(float y) {
         float result = 1 - (y / (float) Constant.mSurfaceViewHeight) * 2;
-        if (Math.abs(result) > Constant.AreaHeight) {//判断是不是在区域内
-            result = 2;
-        }
         return result;
     }
 
     /**
      * 好像是根据可画的区域去计算OpenGL坐标
-     *
      */
     private static float CalculateOppositeCoordinateX(float x) {
         float result = x / Constant.AreaWidth;
@@ -221,7 +160,6 @@ public class ObjectUtil {
 
     /**
      * 好像是根据可画的区域去计算OpenGL坐标
-     *
      */
     private static float CalculateOppositeCoordinateY(float y) {
         float result = y / Constant.AreaHeight;

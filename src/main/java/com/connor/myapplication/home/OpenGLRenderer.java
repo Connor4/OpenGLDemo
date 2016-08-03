@@ -90,9 +90,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl) {
+        //缩放用
 //        glViewport(0, 0, Constant
 //                .mSurfaceViewWidth * 2, Constant.mSurfaceViewHeight * 2);
-        glViewport(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -115,42 +115,12 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 }
             }
 
-            drawOnscreen();
-            //绘制纹理后绘制其他
-            switch (Constant.CURRENT_USE_TYPE) {
-
-                case Constant.PAINT:
-                    glEnable(GL_BLEND);//开启混合
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    mRoot.draw(Constant.OnScreen, mPointProgram, mPointTexture);
-                    glDisable(GL_BLEND);//关闭混合
-                    break;
-
-                case Constant.WALLPAPER:
-                    glEnable(GL_BLEND);//开启混合
-                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    mRoot.draw(Constant.OnScreen, mOtherProgram, mStarTexture);
-                    glDisable(GL_BLEND);//关闭混合
-                    break;
-
-                case Constant.MOSAIC:
-                    glEnable(GL_BLEND);//开启混合
-                   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    mRoot.drawMosaic(Constant.OnScreen, mEffectProgram,mTexture, mPointTexture);
-                    glDisable(GL_BLEND);//关闭混合
-                    break;
-
-                case Constant.ERASER:
-//                    glEnable(GL_BLEND);//开启混合
-//                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//                    mRoot.draw(Constant.OnScreen, mEraserProgram, mPointTexture);
-//                    glDisable(GL_BLEND);//关闭混合
-                    break;
-                default:
-                    break;
-            }
-
             drawInFrameBuffer(mFramebuffer);
+            //因为在FBO画的时候改变了视角，需要重新改变视角
+            glViewport(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
+
+            drawOnscreen();
+
         }
 
     }
@@ -186,6 +156,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
             case Constant.WALLPAPER:
                 glEnable(GL_BLEND);//开启混合
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 mRoot.draw(Constant.OffScreen, mOtherProgram, mDownStarTexture);
                 glDisable(GL_BLEND);//关闭混合
                 break;

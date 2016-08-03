@@ -49,7 +49,7 @@ public class PictureUtil {
             Constant.TextureHeight = (int) (height * Constant.mSurfaceViewHeight);
         }
 
-        //用于设置点击区域大小
+        //图片区域大小
         Constant.AreaWidth = width;
         Constant.AreaHeight = height;
         //计算间隔
@@ -137,28 +137,6 @@ public class PictureUtil {
         return vertices;
     }
 
-    /**
-     * 计算屏幕上效果区域
-     */
-    public static float[] calculateEffectArea(PointBean p) {
-        float strideX = mStrideX;
-        float strideY = mStrideY;
-        float[] vertices = new float[]
-                {
-                        p.getX(), p.getY(), (p.getX() + 1) / 2, (1 - p.getY()) / 2, 0.5f, 0.5f,
-                        p.getX() - strideX, p.getY() - strideY, //XY
-                        (p.getX() - strideX + 1) / 2, (1 - (p.getY() - strideY)) / 2, 0.0f, 1.0f,//ST,ST
-                        p.getX() + strideX, p.getY() - strideY, //XY
-                        (p.getX() + strideX + 1) / 2, (1 - (p.getY() - strideY)) / 2, 1.0f, 1.0f,//ST,ST
-                        p.getX() + strideX, p.getY() + strideY, //XY
-                        (p.getX() + strideX + 1) / 2, (1 - (p.getY() + strideY)) / 2, 1.0f, 0.0f,//ST,ST
-                        p.getX() - strideX, p.getY() + strideY, //XY
-                        (p.getX() - strideX + 1) / 2, (1 - (p.getY() + strideY)) / 2, 0.0f, 0.0f,//ST,ST
-                        p.getX() - strideX, p.getY() - strideY, //XY
-                        (p.getX() - strideX + 1) / 2, (1 - (p.getY() - strideY)) / 2, 0.0f, 1.0f//ST,ST
-                };
-        return vertices;
-    }
 
     /**
      * 计算FBO上面需要的效果区域
