@@ -24,8 +24,15 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="WithPic"
-                android:text="@string/withpic"
+                android:onClick="Mosaic"
+                android:text="@string/mosaic"
+                />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="Star"
+                android:text="@string/star"
                 />
 
             <Button

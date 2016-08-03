@@ -12,6 +12,7 @@ public class Constant {
     public static final int ERASER = 0x0005;//橡皮擦状态
     public static final int PAINT = 0x0006;//画笔状态
     public static final int WALLPAPER = 0x0007;//使用图片作为画笔
+    public static final int MOSAIC = 0x0008;//使用马赛克
     public static int CURRENT_USE_TYPE = PAINT;//当前使用
     //===================end=========================
     /**

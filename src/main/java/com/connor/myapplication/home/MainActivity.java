@@ -83,6 +83,9 @@ public class MainActivity extends Activity {
 
     }
 
+    public void Mosaic(View view) {
+        Constant.CURRENT_USE_TYPE = Constant.MOSAIC;
+    }
 
     public void Erase(View view) {
         Constant.CURRENT_USE_TYPE = Constant.ERASER;
@@ -92,7 +95,7 @@ public class MainActivity extends Activity {
         Constant.CURRENT_USE_TYPE = Constant.PAINT;
     }
 
-    public void WithPic(View view) {
+    public void Star(View view) {
         Constant.CURRENT_USE_TYPE = Constant.WALLPAPER;
     }
 
@@ -148,9 +151,7 @@ public class MainActivity extends Activity {
                 finish();
             }
         }
-
         return false;
-
     }
 
 }

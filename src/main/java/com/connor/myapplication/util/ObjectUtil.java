@@ -4,6 +4,8 @@ import android.opengl.GLSurfaceView;
 
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
+import com.connor.myapplication.home.EffectPoints;
+import com.connor.myapplication.home.FBOEffectPoints;
 import com.connor.myapplication.home.FBOPoints;
 import com.connor.myapplication.home.OpenGLRenderer;
 import com.connor.myapplication.home.Points;
@@ -40,6 +42,11 @@ public class ObjectUtil {
                     CreateAndAddOppositePoint(glOppositeX, glOppositeY);//FBO的需要取反
                     break;
 
+                case Constant.MOSAIC:
+                    CreateAndAddEffect(glCoorX, glCoorY);
+                    CreateAndAddOppositeEffect(glOppositeX,glOppositeY);
+                    break;
+
                 case Constant.ERASER:
                     CreateAndAddEraser(glCoorX, glCoorY);
                     CreateAndAddOppositeEraser(glOppositeX, glOppositeY);
@@ -72,6 +79,16 @@ public class ObjectUtil {
      */
     private static void CreateAndAddOppositeEraser(float x, float y) {
         Points points = new Points(new PointBean(x, y));
+        mRenderer.addOppositeMesh(points);
+    }
+
+    private static void CreateAndAddEffect(float x, float y) {
+        EffectPoints points = new EffectPoints(new PointBean(x, y));
+        mRenderer.addMesh(points);
+    }
+
+    private static void CreateAndAddOppositeEffect(float x, float y) {
+        FBOEffectPoints points = new FBOEffectPoints(new PointBean(x, y));
         mRenderer.addOppositeMesh(points);
     }
 
@@ -137,6 +154,9 @@ public class ObjectUtil {
                     case Constant.WALLPAPER:
                         CreateAndAddPoint(p.getX(), p.getY());
                         break;
+                    case Constant.MOSAIC:
+                        CreateAndAddEffect(p.getX(), p.getY());
+                        break;
                     case Constant.ERASER:
                         CreateAndAddEraser(p.getX(), p.getY());
                         break;
@@ -152,6 +172,9 @@ public class ObjectUtil {
                         break;
                     case Constant.WALLPAPER:
                         CreateAndAddOppositePoint(p.getX(), p.getY());
+                        break;
+                    case Constant.MOSAIC:
+                        CreateAndAddOppositeEffect(p.getX(),p.getY());
                         break;
                     case Constant.ERASER:
                         CreateAndAddOppositeEraser(p.getX(), p.getY());

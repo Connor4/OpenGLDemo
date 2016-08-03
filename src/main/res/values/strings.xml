@@ -5,5 +5,6 @@
     <string name="save">保存</string>
     <string name="erase">擦除</string>
     <string name="paint">画笔</string>
-    <string name="withpic">有图案的</string>
+    <string name="star">星星</string>
+    <string name="mosaic">马赛克</string>
 </resources>

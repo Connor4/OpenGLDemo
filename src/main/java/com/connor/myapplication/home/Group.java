@@ -1,6 +1,7 @@
 package com.connor.myapplication.home;
 
 import com.connor.myapplication.data.Constant;
+import com.connor.myapplication.program.MosaicTextureShaderProgram;
 import com.connor.myapplication.program.OtherTextureShaderProgram;
 import com.connor.myapplication.program.TextureShaderProgram;
 
@@ -52,7 +53,7 @@ public class Group extends Mesh {
         }
     }
 
-    public void drawWithPic(int type, OtherTextureShaderProgram program, int resourceId) {
+    public void drawMosaic(int type, MosaicTextureShaderProgram program, int resourceId, int pointId) {
         int size;
         switch (type) {
             case Constant.OnScreen:
@@ -60,8 +61,8 @@ public class Group extends Mesh {
                 for (int i = 0; i < size; i++) {
                     if (mContainer.peekFirst() != null) {
                         program.useProgram();
-                        program.setUniforms(resourceId);
-                        mContainer.peekFirst().bindData(program);
+                        program.setUniforms(resourceId, pointId);
+                        mContainer.peekFirst().bindData2(program);
                         mContainer.peekFirst().draw();
                         mContainer.pollFirst();
                     }
@@ -72,8 +73,8 @@ public class Group extends Mesh {
                 for (int i = 0; i < size; i++) {
                     if (mOppositeContainer.peekFirst() != null) {
                         program.useProgram();
-                        program.setUniforms(resourceId);
-                        mOppositeContainer.peekFirst().bindData(program);
+                        program.setUniforms(resourceId, pointId);
+                        mOppositeContainer.peekFirst().bindData2(program);
                         mOppositeContainer.peekFirst().draw();
                         mOppositeContainer.pollFirst();
                     }
@@ -84,37 +85,6 @@ public class Group extends Mesh {
         }
     }
 
-    public void erase(int type, TextureShaderProgram program, int resourceId) {
-        int size;
-        switch (type) {
-            case Constant.OnScreen:
-                size = mContainer.size();
-                for (int i = 0; i < size; i++) {
-                    if (mContainer.peekFirst() != null) {
-                        program.useProgram();
-                        program.setUniforms(resourceId);
-                        mContainer.peekFirst().bindData(program);
-                        mContainer.peekFirst().draw();
-                        mContainer.pollFirst();
-                    }
-                }
-                break;
-            case Constant.OffScreen:
-                size = mOppositeContainer.size();
-                for (int i = 0; i < size; i++) {
-                    if (mOppositeContainer.peekFirst() != null) {
-                        program.useProgram();
-                        program.setUniforms(resourceId);
-                        mOppositeContainer.peekFirst().bindData(program);
-                        mOppositeContainer.peekFirst().draw();
-                        mOppositeContainer.pollFirst();
-                    }
-                }
-                break;
-            default:
-                break;
-        }
-    }
 
     /**
      * 添加对象进入屏幕使用的容器
@@ -154,18 +124,5 @@ public class Group extends Mesh {
                 break;
         }
         return -1;
-    }
-
-    public void remove(int type) {
-        switch (type) {
-            case Constant.OnScreen:
-                mContainer.removeFirst();
-                break;
-            case Constant.OffScreen:
-                mOppositeContainer.removeFirst();
-                break;
-            default:
-                break;
-        }
     }
 }

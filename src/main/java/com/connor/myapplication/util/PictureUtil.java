@@ -1,7 +1,5 @@
 package com.connor.myapplication.util;
 
-import android.util.Log;
-
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
@@ -10,9 +8,9 @@ import com.connor.myapplication.program.TextureHelper;
  * Created by meitu on 2016/7/15.
  */
 public class PictureUtil {
-    public static float mStrideX ;
-    public static float mStrideY ;
-    public static float mFBOStrideX ;
+    public static float mStrideX;
+    public static float mStrideY;
+    public static float mFBOStrideX;
     public static float mFBOStrideY;
 
     /**
@@ -135,6 +133,52 @@ public class PictureUtil {
                         0.0f, 0.0f,//ST
                         p.getX() - strideX, p.getY() - strideY, //XY
                         0.0f, 1.0f,//ST
+                };
+        return vertices;
+    }
+
+    /**
+     * 计算屏幕上效果区域
+     */
+    public static float[] calculateEffectArea(PointBean p) {
+        float strideX = mStrideX;
+        float strideY = mStrideY;
+        float[] vertices = new float[]
+                {
+                        p.getX(), p.getY(), (p.getX() + 1) / 2, (1 - p.getY()) / 2, 0.5f, 0.5f,
+                        p.getX() - strideX, p.getY() - strideY, //XY
+                        (p.getX() - strideX + 1) / 2, (1 - (p.getY() - strideY)) / 2, 0.0f, 1.0f,//ST,ST
+                        p.getX() + strideX, p.getY() - strideY, //XY
+                        (p.getX() + strideX + 1) / 2, (1 - (p.getY() - strideY)) / 2, 1.0f, 1.0f,//ST,ST
+                        p.getX() + strideX, p.getY() + strideY, //XY
+                        (p.getX() + strideX + 1) / 2, (1 - (p.getY() + strideY)) / 2, 1.0f, 0.0f,//ST,ST
+                        p.getX() - strideX, p.getY() + strideY, //XY
+                        (p.getX() - strideX + 1) / 2, (1 - (p.getY() + strideY)) / 2, 0.0f, 0.0f,//ST,ST
+                        p.getX() - strideX, p.getY() - strideY, //XY
+                        (p.getX() - strideX + 1) / 2, (1 - (p.getY() - strideY)) / 2, 0.0f, 1.0f//ST,ST
+                };
+        return vertices;
+    }
+
+    /**
+     * 计算FBO上面需要的效果区域
+     */
+    public static float[] calculateOppositeEffectArea(PointBean p) {
+        float strideX = mFBOStrideX;
+        float strideY = mFBOStrideY;
+        float[] vertices = new float[]
+                {
+                        p.getX(), p.getY(), (p.getX() + 1) / 2, (p.getY() - 1) / 2, 0.5f, 0.5f,
+                        p.getX() - strideX, p.getY() - strideY, //XY
+                        (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f,//ST
+                        p.getX() + strideX, p.getY() - strideY, //XY
+                        (p.getX() + strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 1.0f, 0.0f,//ST
+                        p.getX() + strideX, p.getY() + strideY, //XY
+                        (p.getX() + strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 1.0f, 1.0f,//ST
+                        p.getX() - strideX, p.getY() + strideY, //XY
+                        (p.getX() - strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 0.0f, 1.0f,//ST
+                        p.getX() - strideX, p.getY() - strideY, //XY
+                        (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f//ST
                 };
         return vertices;
     }

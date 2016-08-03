@@ -116,6 +116,9 @@ public class BezierUtil {
                 mDeleteLeftPoints = deletePoints(mBezierResult);
                 ObjectUtil.createBezierLine(mDeleteLeftPoints);
                 break;
+            case Constant.MOSAIC:
+                ObjectUtil.createBezierLine(mBezierResult);
+                break;
             case Constant.ERASER:
                 ObjectUtil.createBezierLine(mBezierResult);
                 break;

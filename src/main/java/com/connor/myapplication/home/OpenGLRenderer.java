@@ -6,6 +6,7 @@ import android.opengl.GLSurfaceView;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
+import com.connor.myapplication.program.MosaicTextureShaderProgram;
 import com.connor.myapplication.program.OtherTextureShaderProgram;
 import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
@@ -35,13 +36,13 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private TextureShaderProgram mEraserProgram;
     private TraceTextureShaderProgram mTraceProgram;
     private OtherTextureShaderProgram mOtherProgram;
+    private MosaicTextureShaderProgram mEffectProgram;
     private BackGround mBackGround;
     private FBOBackGround mFBOBackGround;
     private Group mRoot;
     private Context mContext;
     private int mTexture;
     private int mPointTexture;
-    private int mOtherTexture;
     private int mTargetTexture;
     private int mReturnTexture;
     private int mStarTexture;
@@ -66,17 +67,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        mTextureProgram = new TextureShaderProgram(mContext, R.raw.texture_fragment_shader);
-        mPointProgram = new TextureShaderProgram(mContext, R.raw.point_texture_fragment_shader);
-        mEraserProgram = new TextureShaderProgram(mContext, R.raw
-                .eraer_texture_shader_program);
-        mTraceProgram = new TraceTextureShaderProgram(mContext, R.raw.trace_texture_shader_program);
-        mOtherProgram = new OtherTextureShaderProgram(mContext, R.raw.other_texture_shader_program);
-
-        mStarTexture = TextureHelper.loadTexture(mContext, R.drawable.images);
-        mDownStarTexture = TextureHelper.loadTexture(mContext, R.drawable.downimages);
-        mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
-        mTexture = TextureHelper.loadTexture(mContext, mResourceId);
+        initProgram();
+        initTexture();
     }
 
     @Override
@@ -141,10 +133,17 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                     glDisable(GL_BLEND);//关闭混合
                     break;
 
+                case Constant.MOSAIC:
+                    glEnable(GL_BLEND);//开启混合
+                   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    mRoot.drawMosaic(Constant.OnScreen, mEffectProgram,mTexture, mPointTexture);
+                    glDisable(GL_BLEND);//关闭混合
+                    break;
+
                 case Constant.ERASER:
 //                    glEnable(GL_BLEND);//开启混合
 //                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//                    mRoot.erase(Constant.OnScreen, mEraserProgram, mPointTexture);
+//                    mRoot.draw(Constant.OnScreen, mEraserProgram, mPointTexture);
 //                    glDisable(GL_BLEND);//关闭混合
                     break;
                 default:
@@ -191,10 +190,17 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 glDisable(GL_BLEND);//关闭混合
                 break;
 
+            case Constant.MOSAIC:
+                glEnable(GL_BLEND);//开启混合
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                mRoot.drawMosaic(Constant.OffScreen, mEffectProgram, mTexture, mPointTexture);
+                glDisable(GL_BLEND);//关闭混合
+                break;
+
             case Constant.ERASER:
                 glEnable(GL_BLEND);//开启混合
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.erase(Constant.OffScreen, mEraserProgram, mPointTexture);
+                mRoot.draw(Constant.OffScreen, mEraserProgram, mPointTexture);
                 glDisable(GL_BLEND);//关闭混合
                 break;
             default:
@@ -221,6 +227,29 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mBackGround.bindData(mTraceProgram);
         mBackGround.draw();
         glDisable(GL_BLEND);//关闭混合
+    }
+
+    /**
+     * 创建所需要的program
+     */
+    private void initProgram() {
+        mTextureProgram = new TextureShaderProgram(mContext, R.raw.texture_fragment_shader);
+        mPointProgram = new TextureShaderProgram(mContext, R.raw.point_texture_fragment_shader);
+        mEraserProgram = new TextureShaderProgram(mContext, R.raw
+                .eraer_texture_shader_program);
+        mTraceProgram = new TraceTextureShaderProgram(mContext, R.raw.trace_texture_shader_program);
+        mOtherProgram = new OtherTextureShaderProgram(mContext, R.raw.other_texture_shader_program);
+        mEffectProgram = new MosaicTextureShaderProgram(mContext, R.raw.mosaic_texture_shader_program);
+    }
+
+    /**
+     * 创建所需要的纹理
+     */
+    private void initTexture() {
+        mStarTexture = TextureHelper.loadTexture(mContext, R.drawable.images);
+        mDownStarTexture = TextureHelper.loadTexture(mContext, R.drawable.downimages);
+        mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
+        mTexture = TextureHelper.loadTexture(mContext, mResourceId);
     }
 
 
