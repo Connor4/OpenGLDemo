@@ -144,12 +144,15 @@ public class PictureUtil {
      * 按照纹理比例在Y轴乘以比例就可以得到Y轴应该变的大小
      */
     private static void calculateStride() {
-        mStrideX = 0.05f;
-        mStrideY = 0.05f;
+
         float ratio = TextureHelper.getBitmapOptions();
         if (ratio > 1) {
+            mStrideX = 0.05f;
+            mStrideY = 0.05f;
             mStrideY /= ratio;
         } else {
+            mStrideX = 0.025f;
+            mStrideY = 0.025f;
             mStrideY *= ratio;
         }
     }

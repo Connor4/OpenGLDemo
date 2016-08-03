@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
@@ -16,7 +17,6 @@ import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.util.BezierUtil;
 import com.connor.myapplication.util.FBOArrayUtil;
 import com.connor.myapplication.util.ObjectUtil;
-import com.connor.myapplication.util.PictureUtil;
 
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
@@ -92,9 +92,10 @@ public class MainActivity extends Activity {
         Constant.CURRENT_USE_TYPE = Constant.PAINT;
     }
 
-    public void WithPic(View view){
+    public void WithPic(View view) {
         Constant.CURRENT_USE_TYPE = Constant.WALLPAPER;
     }
+
     public void Save(View view) {
         mRenderer.mSavePic = true;
         mGLSurfaceView.requestRender();
@@ -103,7 +104,7 @@ public class MainActivity extends Activity {
 
     public void Undo(View view) {
         int StepLeft = FBOArrayUtil.CheckLeft();//看看还有没有得回退
-        if (StepLeft != 1 ) {
+        if (StepLeft != 1) {
             mRenderer.mDrawLast = true;
             mGLSurfaceView.requestRender();
         } else {
@@ -125,6 +126,30 @@ public class MainActivity extends Activity {
     public void reUndo(View view) {
         mRenderer.mDrawNext = true;
         mGLSurfaceView.requestRender();
+
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            int StepLeft = FBOArrayUtil.CheckLeft();
+            if (StepLeft != 0) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("放弃该图片？")
+                        .setPositiveButton("确定",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        finish();
+                                    }
+                                }).setNegativeButton("取消", null).create()
+                        .show();
+            } else {
+                finish();
+            }
+        }
+
+        return false;
 
     }
 
