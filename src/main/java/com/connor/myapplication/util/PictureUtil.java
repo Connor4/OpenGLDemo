@@ -141,6 +141,7 @@ public class PictureUtil {
 	}
 
 	/**
+	 *
 	 * 计算比例，使笔触变圆
 	 * 按照纹理比例
 	 */
