@@ -1,8 +1,12 @@
 package com.connor.myapplication.util;
 
+import android.util.Log;
+
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
+
+import java.util.Random;
 
 /**
  * Created by meitu on 2016/7/15.
@@ -52,7 +56,7 @@ public class PictureUtil {
         //图片区域大小
         Constant.AreaWidth = width;
         Constant.AreaHeight = height;
-        //计算间隔
+        //第一次进来也要计算间隔
         calculateStride();
         calculateFBOStride();
 
@@ -93,7 +97,7 @@ public class PictureUtil {
      * @param p 坐标封装类
      * @return
      */
-    public static float[] calculatePointsArea(PointBean p) {
+/*    public static float[] calculatePointsArea(PointBean p) {
         float strideX = mStrideX;
         float strideY = mStrideY;
         float[] vertices = new float[]
@@ -111,7 +115,7 @@ public class PictureUtil {
                         0.0f, 1.0f,//ST
                 };
         return vertices;
-    }
+    }*/
 
     /*  *
          * 这个方法是因为在横屏状态下，FBO上转回屏幕Y轴会压缩，对应的点Y轴距离就会变小
@@ -120,6 +124,16 @@ public class PictureUtil {
     public static float[] calculateOppositePointsArea(PointBean p) {
         float strideX = mFBOStrideX;
         float strideY = mFBOStrideY;
+        Log.d("TAG", " FBO X " + mFBOStrideX + "FBO Y " + mFBOStrideY);
+
+        if (Constant.CURRENT_USE_TYPE == Constant.WALLPAPER) {
+            float addStride = changeStride();
+            strideX += addStride;
+            strideY += addStride;
+            Log.d("TAG", " strideX X " + strideX + "strideX Y " + strideY + "   ffff " + addStride);
+
+        }
+
         float[] vertices = new float[]
                 {       //X,Y,S,T
                         p.getX(), p.getY(), 0.5f, 0.5f,
@@ -166,7 +180,6 @@ public class PictureUtil {
      * 按照纹理比例在Y轴乘以比例就可以得到Y轴应该变的大小
      */
     private static void calculateStride() {
-
         float ratio = TextureHelper.getBitmapOptions();
         if (ratio > 1) {
             mStrideX = 0.05f;
@@ -187,6 +200,24 @@ public class PictureUtil {
         mFBOStrideX = mStrideX;
         mFBOStrideY = (mStrideY * Constant.mSurfaceViewHeight) / (float) Constant
                 .TextureHeight;
+    }
+
+    /**
+     * 当点需要使用大小不同纹理时，在这里改变点的大小
+     * 随机生成一些结果，使得stride变大或者变小
+     */
+    private static float changeStride() {
+        Random random = new Random();
+        float result = random.nextFloat();
+        return result/10;
+    }
+
+    /**
+     * 改变画笔之后，需要重新设置当前的笔画间隔
+     */
+    public static void reSetStride() {
+        calculateStride();
+        calculateFBOStride();
     }
 
 }

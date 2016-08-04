@@ -6,5 +6,5 @@ void main()
 {
        vec4 textureColor = texture2D(u_TextureUnit, v_TextureCoordinates);
        float gray = dot(textureColor.rgb, vec3(0.299, 0.587, 0.114));
-       gl_FragColor = vec4(textureColor.rgb, gray);
+       gl_FragColor = vec4(0.5,1.0,0.0, gray);
 }

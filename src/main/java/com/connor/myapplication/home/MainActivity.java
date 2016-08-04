@@ -18,6 +18,7 @@ import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.util.BezierUtil;
 import com.connor.myapplication.util.FBOArrayUtil;
 import com.connor.myapplication.util.ObjectUtil;
+import com.connor.myapplication.util.PictureUtil;
 
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
@@ -86,14 +87,17 @@ public class MainActivity extends Activity {
 
     public void Mosaic(View view) {
         Constant.CURRENT_USE_TYPE = Constant.MOSAIC;
+        PictureUtil.reSetStride();
     }
 
     public void Erase(View view) {
         Constant.CURRENT_USE_TYPE = Constant.ERASER;
+        PictureUtil.reSetStride();
     }
 
     public void Paint(View view) {
         Constant.CURRENT_USE_TYPE = Constant.PAINT;
+        PictureUtil.reSetStride();
     }
 
     public void Star(View view) {

@@ -22,7 +22,7 @@ public class Points extends Mesh {
     private final VertexArray vertexArray;
 
     public Points(PointBean pb) {
-        vertices = PictureUtil.calculatePointsArea(pb);
+ //       vertices = PictureUtil.calculatePointsArea(pb);
         vertexArray = new VertexArray(vertices);
     }
 
@@ -46,6 +46,4 @@ public class Points extends Mesh {
             glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
     }
 
-    public void clearSelf() {
-    }
 }

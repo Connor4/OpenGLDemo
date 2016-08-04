@@ -16,5 +16,6 @@ void main()
      g = textureColor.g * (1.0 - traceColor.r)+ traceColor.g;
      b = textureColor.b * (1.0 - traceColor.r)+ traceColor.b;
 
-     gl_FragColor = vec4(r,g,b, 1.0);
+
+     gl_FragColor = vec4(r, g, b, 1.0);
 }

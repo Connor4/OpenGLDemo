@@ -8,7 +8,6 @@ import com.connor.myapplication.program.TextureShaderProgram;
  */
 abstract class Mesh {
     public void draw() {};
-    public void clearSelf(){};
 
     public void bindData(TextureShaderProgram program) {};
 

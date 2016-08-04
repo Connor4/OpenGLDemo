@@ -2,6 +2,8 @@ package com.connor.myapplication.program;
 
 import android.content.Context;
 
+import com.connor.myapplication.data.Constant;
+
 import static android.opengl.GLES20.GL_TEXTURE0;
 import static android.opengl.GLES20.GL_TEXTURE1;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
@@ -27,6 +29,7 @@ public class OtherTextureShaderProgram extends TextureShaderProgram {
 
         aTextureCoordinatesLocation =
                 glGetAttribLocation(program, A_TEXTURE_COORDINATES);
+        Constant.CURRENT_OTHERPROGRAM_INDEX = program;
     }
 
     public void setUniforms(int textureId) {

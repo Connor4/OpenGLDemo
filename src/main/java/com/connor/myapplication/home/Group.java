@@ -19,29 +19,38 @@ public class Group extends Mesh {
      */
     public void draw(TextureShaderProgram program, int resourceId) {
         int size;
+        FBOPoints object;
         size = mOppositeContainer.size();
         for (int i = 0; i < size; i++) {
             if (mOppositeContainer.peekFirst() != null) {
                 program.useProgram();
                 program.setUniforms(resourceId);
-                mOppositeContainer.peekFirst().bindData(program);
-                mOppositeContainer.peekFirst().draw();
-                mOppositeContainer.pollFirst();
+                object = (FBOPoints)mOppositeContainer.pollFirst();
+                object.bindData(program);
+                object.draw();
+                object = null;
+//                mOppositeContainer.peekFirst().bindData(program);
+//                mOppositeContainer.peekFirst().draw();
+ //               mOppositeContainer.pollFirst();
             }
         }
     }
 
-    public void drawMosaic(MosaicTextureShaderProgram program, int resourceId, int pointId) {
+    public void drawMultiTexture(MosaicTextureShaderProgram program, int resourceId, int pointId) {
         int size;
-
+        FBOEffectPoints object;
         size = mOppositeContainer.size();
         for (int i = 0; i < size; i++) {
             if (mOppositeContainer.peekFirst() != null) {
                 program.useProgram();
                 program.setUniforms(resourceId, pointId);
-                mOppositeContainer.peekFirst().bindData2(program);
-                mOppositeContainer.peekFirst().draw();
-                mOppositeContainer.pollFirst();
+                object = (FBOEffectPoints)mOppositeContainer.pollFirst();
+                object.bindData2(program);
+                object.draw();
+                object = null;
+//                mOppositeContainer.peekFirst().bindData2(program);
+//                mOppositeContainer.peekFirst().draw();
+//                mOppositeContainer.pollFirst();
             }
         }
     }
@@ -60,8 +69,5 @@ public class Group extends Mesh {
         mOppositeContainer.clear();
     }
 
-    private void clearCurrentObject() {
-        mOppositeContainer.pollFirst();
-    }
 
 }

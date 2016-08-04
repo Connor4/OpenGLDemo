@@ -14,18 +14,20 @@ import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
 import com.connor.myapplication.util.SaveUtil;
 
+import java.util.Random;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import static android.opengl.GLES20.GL_BLEND;
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
-import static android.opengl.GLES20.GL_ONE;
 import static android.opengl.GLES20.GL_ONE_MINUS_SRC_ALPHA;
 import static android.opengl.GLES20.GL_SRC_ALPHA;
-import static android.opengl.GLES20.GL_ZERO;
 import static android.opengl.GLES20.glBlendFunc;
 import static android.opengl.GLES20.glClear;
 import static android.opengl.GLES20.glClearColor;
+import static android.opengl.GLES20.glDeleteProgram;
+import static android.opengl.GLES20.glDeleteTextures;
 import static android.opengl.GLES20.glDisable;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glViewport;
@@ -35,7 +37,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private TextureShaderProgram mPointProgram;
     private TextureShaderProgram mEraserProgram;
     private TraceTextureShaderProgram mTraceProgram;
-    private OtherTextureShaderProgram mOtherProgram;
     private MosaicTextureShaderProgram mEffectProgram;
     private BackGround mBackGround;
     private FBOBackGround mFBOBackGround;
@@ -45,7 +46,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private int mPointTexture;
     private int mTargetTexture;
     private int mReturnTexture;
-    private int mDownStarTexture;
+
     private int mFramebuffer;
     private FBOArrayUtil mArrayUtil;
     private int mResourceId;
@@ -149,20 +150,34 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
             case Constant.WALLPAPER:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.draw(mOtherProgram, mDownStarTexture);
+
+                int[] mCurrentOtherTextureIndex = new int[1];
+                mCurrentOtherTextureIndex[0] = CreateChangerTexture();
+
+                mRoot.draw(CreateChangeProgram(), mCurrentOtherTextureIndex[0]);
+
+                glDeleteProgram(Constant.CURRENT_OTHERPROGRAM_INDEX);
+                glDeleteTextures(1, mCurrentOtherTextureIndex, 0);
+
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.MOSAIC:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.drawMosaic(mEffectProgram, mTexture, mPointTexture);
+
+                mEffectProgram = new MosaicTextureShaderProgram(mContext,
+                        R.raw.mosaic_texture_shader_program);
+                mRoot.drawMultiTexture(mEffectProgram, mTexture, mPointTexture);
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.ERASER:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                mEraserProgram = new TextureShaderProgram(mContext, R.raw
+                        .eraer_texture_shader_program);
                 mRoot.draw(mEraserProgram, mPointTexture);
                 glDisable(GL_BLEND);
                 break;
@@ -179,8 +194,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //每次将相片跟笔画混合在一起
         mTraceProgram.useProgram();
         if (mDrawLast || mDrawNext) {
@@ -190,7 +203,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         }
         mBackGround.bindData(mTraceProgram);
         mBackGround.draw();
-        glDisable(GL_BLEND);
     }
 
     /**
@@ -199,20 +211,73 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private void initProgram() {
         mTextureProgram = new TextureShaderProgram(mContext, R.raw.texture_fragment_shader);
         mPointProgram = new TextureShaderProgram(mContext, R.raw.point_texture_fragment_shader);
-        mEraserProgram = new TextureShaderProgram(mContext, R.raw
-                .eraer_texture_shader_program);
+
         mTraceProgram = new TraceTextureShaderProgram(mContext, R.raw.trace_texture_shader_program);
-        mOtherProgram = new OtherTextureShaderProgram(mContext, R.raw.other_texture_shader_program);
-        mEffectProgram = new MosaicTextureShaderProgram(mContext, R.raw.mosaic_texture_shader_program);
+
     }
 
     /**
      * 创建所需要的纹理
      */
     private void initTexture() {
-        mDownStarTexture = TextureHelper.loadTexture(mContext, R.drawable.downimages);
         mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
         mTexture = TextureHelper.loadTexture(mContext, mResourceId);
+    }
+
+    /**
+     * 目的是采用不同的脚本
+     *
+     * @return
+     */
+    private OtherTextureShaderProgram CreateChangeProgram() {
+        OtherTextureShaderProgram mOtherProgram = null;
+        int source1 = R.raw.other_texture_shader_program;
+        int source2 = R.raw.other_texture_shader_program2;
+        Random random = new Random();
+        int result = random.nextInt(2) % (2 - 1 + 1) + 1;
+        switch (result) {
+            case 1:
+                mOtherProgram = new OtherTextureShaderProgram(mContext,
+                        source1);
+                break;
+            case 2:
+                mOtherProgram = new OtherTextureShaderProgram(mContext,
+                        source2);
+                break;
+            default:
+                break;
+
+        }
+        return mOtherProgram;
+    }
+
+    private int CreateChangerTexture() {
+        int mOtherTexture = 0;//旋选择0是错误的，0代表其他纹理
+        Random random = new Random();
+        int result = random.nextInt(6) % (6 - 1 + 1) + 1;
+        switch (result) {
+            case 1:
+                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_1);
+                break;
+            case 2:
+                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_2);
+                break;
+            case 3:
+                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_3);
+                break;
+            case 4:
+                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_4);
+                break;
+            case 5:
+                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_5);
+                break;
+            case 6:
+                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_6);
+                break;
+            default:
+                break;
+        }
+        return mOtherTexture;
     }
 
 

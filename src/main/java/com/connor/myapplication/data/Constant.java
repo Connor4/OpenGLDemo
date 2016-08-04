@@ -13,6 +13,7 @@ public class Constant {
     public static final int MOSAIC = 0x0008;//使用马赛克
     public static int CURRENT_USE_TYPE = PAINT;//当前使用
     //===================end=========================
+    public static int CURRENT_OTHERPROGRAM_INDEX ;//记录当前otherProgram序号,删除时使用
     /**
      * surfaceView宽度
      */

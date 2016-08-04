@@ -60,7 +60,7 @@ public class ObjectUtil {
      * @param y opengl坐标
      */
     private static void CreateAndAddOppositeEraser(float x, float y) {
-        Points points = new Points(new PointBean(x, y));
+        FBOPoints points = new FBOPoints(new PointBean(x, y));
         mRenderer.addOppositeMesh(points);
     }
 
@@ -138,7 +138,6 @@ public class ObjectUtil {
      */
     private static float CalculateCoordinateX(float x) {
         float result = (x / (float) Constant.mSurfaceViewWidth) * 2 - 1;
-
         return result;
     }
 
