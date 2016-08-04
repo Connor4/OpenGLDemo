@@ -116,9 +116,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
             glViewport(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
 
             drawOnscreen();
-
         }
-
     }
 
     /**
@@ -129,7 +127,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        //第一次之后都要使用FBO的那个纹理
         mTextureProgram.useProgram();
         if (mDrawLast || mDrawNext) {
             mTextureProgram.setUniforms(mReturnTexture);
@@ -142,32 +139,31 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mFBOBackGround.draw();
 
         switch (Constant.CURRENT_USE_TYPE) {
-
             case Constant.PAINT:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.draw(Constant.OffScreen, mPointProgram, mPointTexture);
+                mRoot.draw(mPointProgram, mPointTexture);
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.WALLPAPER:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.draw(Constant.OffScreen, mOtherProgram, mDownStarTexture);
+                mRoot.draw(mOtherProgram, mDownStarTexture);
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.MOSAIC:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.drawMosaic(Constant.OffScreen, mEffectProgram, mTexture, mPointTexture);
+                mRoot.drawMosaic(mEffectProgram, mTexture, mPointTexture);
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.ERASER:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                mRoot.draw(Constant.OffScreen, mEraserProgram, mPointTexture);
+                mRoot.draw(mEraserProgram, mPointTexture);
                 glDisable(GL_BLEND);
                 break;
             default:

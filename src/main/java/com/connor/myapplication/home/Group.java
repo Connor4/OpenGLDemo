@@ -14,11 +14,10 @@ public class Group extends Mesh {
     /**
      * 选择对象的容器去绘制
      *
-     * @param type       在哪里画
      * @param program    片段着色器
      * @param resourceId 那张cover图片的纹理
      */
-    public void draw(int type, TextureShaderProgram program, int resourceId) {
+    public void draw(TextureShaderProgram program, int resourceId) {
         int size;
         size = mOppositeContainer.size();
         for (int i = 0; i < size; i++) {
@@ -32,7 +31,7 @@ public class Group extends Mesh {
         }
     }
 
-    public void drawMosaic(int type, MosaicTextureShaderProgram program, int resourceId, int pointId) {
+    public void drawMosaic(MosaicTextureShaderProgram program, int resourceId, int pointId) {
         int size;
 
         size = mOppositeContainer.size();
@@ -59,6 +58,10 @@ public class Group extends Mesh {
      */
     public void clear() {
         mOppositeContainer.clear();
+    }
+
+    private void clearCurrentObject() {
+        mOppositeContainer.pollFirst();
     }
 
 }

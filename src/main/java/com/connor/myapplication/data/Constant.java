@@ -4,8 +4,6 @@ package com.connor.myapplication.data;
  * Created by meitu on 2016/7/6.
  */
 public class Constant {
-    public static final int OnScreen = 0x0001;//表示在屏幕上
-    public static final int OffScreen = 0x0002;//表示离屏渲染用
     public static final int BYTES_PER_FLOAT = 0x0004;//字节大小
 
     //==================start==========================

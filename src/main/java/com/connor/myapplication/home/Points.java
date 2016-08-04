@@ -45,4 +45,7 @@ public class Points extends Mesh {
     public void draw() {
             glDrawArrays(GL_TRIANGLE_FAN, 0, 6);
     }
+
+    public void clearSelf() {
+    }
 }
