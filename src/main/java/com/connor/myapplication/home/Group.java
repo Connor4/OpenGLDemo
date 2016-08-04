@@ -29,9 +29,6 @@ public class Group extends Mesh {
                 object.bindData(program);
                 object.draw();
                 object = null;
-//                mOppositeContainer.peekFirst().bindData(program);
-//                mOppositeContainer.peekFirst().draw();
- //               mOppositeContainer.pollFirst();
             }
         }
     }
@@ -48,9 +45,6 @@ public class Group extends Mesh {
                 object.bindData2(program);
                 object.draw();
                 object = null;
-//                mOppositeContainer.peekFirst().bindData2(program);
-//                mOppositeContainer.peekFirst().draw();
-//                mOppositeContainer.pollFirst();
             }
         }
     }

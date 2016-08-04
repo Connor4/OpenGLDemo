@@ -19,6 +19,7 @@ import com.connor.myapplication.util.BezierUtil;
 import com.connor.myapplication.util.FBOArrayUtil;
 import com.connor.myapplication.util.ObjectUtil;
 import com.connor.myapplication.util.PictureUtil;
+import com.connor.myapplication.util.RendererUtil;
 
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
@@ -83,6 +84,12 @@ public class MainActivity extends Activity {
             }
         });
 
+    }
+
+    public void FireWorks(View view) {
+        Constant.CURRENT_USE_TYPE = Constant.FIREWORKS;
+        RendererUtil.CreateFireWorkTexture(MainActivity.this);
+        PictureUtil.reSetStride();
     }
 
     public void Mosaic(View view) {

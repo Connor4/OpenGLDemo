@@ -26,6 +26,9 @@ import static android.opengl.GLUtils.texImage2D;
  * Created by meitu on 2016/7/5.
  */
 public class TextureHelper {
+    /**
+     * 保存照片options，某些地方需要用到
+     */
     public static BitmapFactory.Options mOptions;
     /**
      * 通过输入图片，加载纹理
@@ -35,6 +38,48 @@ public class TextureHelper {
      * @return
      */
     public static int loadTexture(Context context, int resourceId) {
+        final int[] textureObjectIds = new int[1];
+        glGenTextures(1, textureObjectIds, 0);
+
+        if (textureObjectIds[0] == 0) {
+            return 0;
+        }
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inScaled = false;
+
+        Bitmap bitmapTmp = BitmapFactory.decodeResource(
+                context.getResources(), resourceId, options);
+
+        Bitmap bitmap = getResizedBitmap(bitmapTmp, Constant.ScreenWidth, Constant.ScreenHeight );
+
+        if (bitmap == null) {
+
+            glDeleteTextures(1, textureObjectIds, 0);
+            return 0;
+        }
+        glBindTexture(GL_TEXTURE_2D, textureObjectIds[0]);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+        bitmap.recycle();
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        return textureObjectIds[0];
+    }
+
+    /**
+     * 这个函数跟上面那个是一样的，但是为了保存原始照片的options，
+     *需要另外弄一个给它记录
+     * @param context
+     * @param resourceId
+     * @return
+     */
+    public static int loadOriginalTexture(Context context, int resourceId) {
         final int[] textureObjectIds = new int[1];
         glGenTextures(1, textureObjectIds, 0);
 

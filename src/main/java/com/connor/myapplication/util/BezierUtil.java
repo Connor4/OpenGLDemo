@@ -111,6 +111,9 @@ public class BezierUtil {
             case Constant.PAINT:
                 ObjectUtil.createBezierLine(mBezierResult);
                 break;
+            case Constant.FIREWORKS:
+                ObjectUtil.createBezierLine(mBezierResult);
+                break;
             case Constant.WALLPAPER:
                 //先除去一些点
                 mDeleteLeftPoints = deletePoints(mBezierResult);

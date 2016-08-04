@@ -124,14 +124,10 @@ public class PictureUtil {
     public static float[] calculateOppositePointsArea(PointBean p) {
         float strideX = mFBOStrideX;
         float strideY = mFBOStrideY;
-        Log.d("TAG", " FBO X " + mFBOStrideX + "FBO Y " + mFBOStrideY);
-
         if (Constant.CURRENT_USE_TYPE == Constant.WALLPAPER) {
             float addStride = changeStride();
             strideX += addStride;
             strideY += addStride;
-            Log.d("TAG", " strideX X " + strideX + "strideX Y " + strideY + "   ffff " + addStride);
-
         }
 
         float[] vertices = new float[]

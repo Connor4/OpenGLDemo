@@ -7,14 +7,13 @@ import android.opengl.GLSurfaceView;
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.program.MosaicTextureShaderProgram;
-import com.connor.myapplication.program.OtherTextureShaderProgram;
 import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
+import com.connor.myapplication.util.PictureUtil;
+import com.connor.myapplication.util.RendererUtil;
 import com.connor.myapplication.util.SaveUtil;
-
-import java.util.Random;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -44,6 +43,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private int mTexture;
     private int mPointTexture;
+    private int mFireWorkTexture;
     private int mTargetTexture;
     private int mReturnTexture;
 
@@ -139,22 +139,29 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mFBOBackGround.bindData(mTextureProgram);
         mFBOBackGround.draw();
 
+        glEnable(GL_BLEND);//反正下面全部都要开启的
+
         switch (Constant.CURRENT_USE_TYPE) {
             case Constant.PAINT:
-                glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 mRoot.draw(mPointProgram, mPointTexture);
                 glDisable(GL_BLEND);
                 break;
 
+            case Constant.FIREWORKS:
+
+                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil.SelectFireWorkTexture());
+
+                glDisable(GL_BLEND);
+                break;
+
             case Constant.WALLPAPER:
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 int[] mCurrentOtherTextureIndex = new int[1];
-                mCurrentOtherTextureIndex[0] = CreateChangerTexture();
+                mCurrentOtherTextureIndex[0] = RendererUtil.CreateChangeTexture(mContext);
 
-                mRoot.draw(CreateChangeProgram(), mCurrentOtherTextureIndex[0]);
+                mRoot.draw(RendererUtil.CreateChangeProgram(mContext), mCurrentOtherTextureIndex[0]);
 
                 glDeleteProgram(Constant.CURRENT_OTHERPROGRAM_INDEX);
                 glDeleteTextures(1, mCurrentOtherTextureIndex, 0);
@@ -163,22 +170,22 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 break;
 
             case Constant.MOSAIC:
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 mEffectProgram = new MosaicTextureShaderProgram(mContext,
                         R.raw.mosaic_texture_shader_program);
                 mRoot.drawMultiTexture(mEffectProgram, mTexture, mPointTexture);
+
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.ERASER:
-                glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 mEraserProgram = new TextureShaderProgram(mContext, R.raw
                         .eraer_texture_shader_program);
                 mRoot.draw(mEraserProgram, mPointTexture);
+
                 glDisable(GL_BLEND);
                 break;
             default:
@@ -221,63 +228,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      */
     private void initTexture() {
         mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
-        mTexture = TextureHelper.loadTexture(mContext, mResourceId);
-    }
-
-    /**
-     * 目的是采用不同的脚本
-     *
-     * @return
-     */
-    private OtherTextureShaderProgram CreateChangeProgram() {
-        OtherTextureShaderProgram mOtherProgram = null;
-        int source1 = R.raw.other_texture_shader_program;
-        int source2 = R.raw.other_texture_shader_program2;
-        Random random = new Random();
-        int result = random.nextInt(2) % (2 - 1 + 1) + 1;
-        switch (result) {
-            case 1:
-                mOtherProgram = new OtherTextureShaderProgram(mContext,
-                        source1);
-                break;
-            case 2:
-                mOtherProgram = new OtherTextureShaderProgram(mContext,
-                        source2);
-                break;
-            default:
-                break;
-
-        }
-        return mOtherProgram;
-    }
-
-    private int CreateChangerTexture() {
-        int mOtherTexture = 0;//旋选择0是错误的，0代表其他纹理
-        Random random = new Random();
-        int result = random.nextInt(6) % (6 - 1 + 1) + 1;
-        switch (result) {
-            case 1:
-                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_1);
-                break;
-            case 2:
-                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_2);
-                break;
-            case 3:
-                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_3);
-                break;
-            case 4:
-                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_4);
-                break;
-            case 5:
-                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_5);
-                break;
-            case 6:
-                mOtherTexture = TextureHelper.loadTexture(mContext, R.drawable.dm_1049_6);
-                break;
-            default:
-                break;
-        }
-        return mOtherTexture;
+        mTexture = TextureHelper.loadOriginalTexture(mContext, mResourceId);
     }
 
 

@@ -7,7 +7,6 @@ import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.home.FBOEffectPoints;
 import com.connor.myapplication.home.FBOPoints;
 import com.connor.myapplication.home.OpenGLRenderer;
-import com.connor.myapplication.home.Points;
 
 import java.util.ArrayList;
 
@@ -35,6 +34,10 @@ public class ObjectUtil {
                 break;
 
             case Constant.WALLPAPER:
+                CreateAndAddOppositePoint(glOppositeX, glOppositeY);
+                break;
+
+            case Constant.FIREWORKS:
                 CreateAndAddOppositePoint(glOppositeX, glOppositeY);
                 break;
 
@@ -87,13 +90,11 @@ public class ObjectUtil {
      * 用点画线
      */
     public static void createBezierLine(ArrayList<PointBean> list) {
-        ArrayList<PointBean> frontList = new ArrayList<>();
         ArrayList<PointBean> oppositeList = new ArrayList<>();
         float glLineCoorX;
         float glLineCoorY;
         float glLineOppositeCoorX;
         float glLineOppositeCoorY;
-        PointBean frontBean;
         PointBean oppositeBean;
 
         for (PointBean p : list) {
@@ -102,14 +103,11 @@ public class ObjectUtil {
             glLineOppositeCoorX = CalculateOppositeCoordinateX(glLineCoorX);
             glLineOppositeCoorY = CalculateOppositeCoordinateY(-glLineCoorY);//FBO的需要取反
 
-            frontBean = new PointBean(glLineCoorX, glLineCoorY);
-            frontList.add(frontBean);
-
             oppositeBean = new PointBean(glLineOppositeCoorX, glLineOppositeCoorY);
             oppositeList.add(oppositeBean);
         }
 
-        if (!frontList.isEmpty() && !oppositeList.isEmpty()) {
+        if (!oppositeList.isEmpty()) {
 
             for (PointBean p : oppositeList) {
                 switch (Constant.CURRENT_USE_TYPE) {
@@ -117,6 +115,9 @@ public class ObjectUtil {
                         CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     case Constant.WALLPAPER:
+                        CreateAndAddOppositePoint(p.getX(), p.getY());
+                        break;
+                    case Constant.FIREWORKS:
                         CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     case Constant.MOSAIC:

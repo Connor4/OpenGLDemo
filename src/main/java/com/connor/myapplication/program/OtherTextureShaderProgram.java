@@ -29,7 +29,18 @@ public class OtherTextureShaderProgram extends TextureShaderProgram {
 
         aTextureCoordinatesLocation =
                 glGetAttribLocation(program, A_TEXTURE_COORDINATES);
-        Constant.CURRENT_OTHERPROGRAM_INDEX = program;
+
+//        switch (Constant.CURRENT_USE_TYPE) {
+//            case Constant.WALLPAPER:
+                Constant.CURRENT_OTHERPROGRAM_INDEX = program;
+//                break;
+//            case Constant.FIREWORKS:
+//                Constant.CURRENT_FIREWORKPROGARM_INDEX = program;
+//                break;
+//            default:
+//                break;
+//        }
+
     }
 
     public void setUniforms(int textureId) {
