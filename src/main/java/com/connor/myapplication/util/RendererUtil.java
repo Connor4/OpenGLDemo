@@ -1,6 +1,7 @@
 package com.connor.myapplication.util;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.program.OtherTextureShaderProgram;
@@ -13,6 +14,12 @@ import java.util.Random;
  */
 public class RendererUtil {
 
+    /**
+     * 创建纹理,因为每次用的都不同，所以用了就删除
+     * 每次都重新创建
+     * @param mContext
+     * @return
+     */
     public static int CreateChangeTexture(Context mContext) {
         int mOtherTexture = 0;//选择0是错误的，0代表其他纹理
         Random random = new Random();
@@ -66,10 +73,15 @@ public class RendererUtil {
         }
         return mOtherProgram;
     }
-    //===========================================================
+    //====================End of OtherTexture=======================
 
     public static int[] mFireWorkTexture = new int[6];
 
+    /**
+     * 应该在选择烟花笔的时候就创建纹理，但是好像不是在GL线程就创建不了，
+     * 要么用完换笔了把纹理删除
+     * 以后再修改。
+     */
     public static void CreateFireWorkTexture(Context mContext) {
         int[] resource = new int[]
                 {
@@ -124,4 +136,5 @@ public class RendererUtil {
                 R.raw.firework_texture_shader_program);
         return mOtherProgram;
     }
+    //===============End of FireWork ==================
 }

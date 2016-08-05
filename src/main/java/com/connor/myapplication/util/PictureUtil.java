@@ -129,6 +129,11 @@ public class PictureUtil {
             strideX += addStride;
             strideY += addStride;
         }
+        //烟花笔要放大一点距离不然不明显
+        if (Constant.CURRENT_USE_TYPE == Constant.FIREWORKS) {
+            strideX *= 2;
+            strideY *= 2;
+        }
 
         float[] vertices = new float[]
                 {       //X,Y,S,T
@@ -158,13 +163,17 @@ public class PictureUtil {
                 {
                         p.getX(), p.getY(), (p.getX() + 1) / 2, (p.getY() - 1) / 2, 0.5f, 0.5f,
                         p.getX() - strideX, p.getY() - strideY, //XY
-                        (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f,//ST
+                        (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f,
+                        //ST
                         p.getX() + strideX, p.getY() - strideY, //XY
-                        (p.getX() + strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 1.0f, 0.0f,//ST
+                        (p.getX() + strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 1.0f, 0.0f,
+                        //ST
                         p.getX() + strideX, p.getY() + strideY, //XY
-                        (p.getX() + strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 1.0f, 1.0f,//ST
+                        (p.getX() + strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 1.0f, 1.0f,
+                        //ST
                         p.getX() - strideX, p.getY() + strideY, //XY
-                        (p.getX() - strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 0.0f, 1.0f,//ST
+                        (p.getX() - strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 0.0f, 1.0f,
+                        //ST
                         p.getX() - strideX, p.getY() - strideY, //XY
                         (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f//ST
                 };
@@ -205,7 +214,7 @@ public class PictureUtil {
     private static float changeStride() {
         Random random = new Random();
         float result = random.nextFloat();
-        return result/10;
+        return result / 10;
     }
 
     /**

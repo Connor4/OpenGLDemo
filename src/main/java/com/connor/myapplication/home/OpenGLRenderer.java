@@ -3,6 +3,7 @@ package com.connor.myapplication.home;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.util.Log;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
@@ -76,7 +77,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glViewport(0, 0, width, height);
         Constant.mSurfaceViewWidth = width;
         Constant.mSurfaceViewHeight = height;
-
         //因为SurfaceView布局没有设置SurfaceView的宽高，所以只能在这里创建
         mBackGround = new BackGround();//屏幕渲染使用
         mFBOBackGround = new FBOBackGround();//离屏渲染使用
@@ -149,19 +149,22 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 break;
 
             case Constant.FIREWORKS:
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil.SelectFireWorkTexture());
+                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
+                        .SelectFireWorkTexture());
 
                 glDisable(GL_BLEND);
                 break;
 
             case Constant.WALLPAPER:
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 int[] mCurrentOtherTextureIndex = new int[1];
                 mCurrentOtherTextureIndex[0] = RendererUtil.CreateChangeTexture(mContext);
 
-                mRoot.draw(RendererUtil.CreateChangeProgram(mContext), mCurrentOtherTextureIndex[0]);
+                mRoot.draw(RendererUtil.CreateChangeProgram(mContext),
+                        mCurrentOtherTextureIndex[0]);
 
                 glDeleteProgram(Constant.CURRENT_OTHERPROGRAM_INDEX);
                 glDeleteTextures(1, mCurrentOtherTextureIndex, 0);
@@ -170,7 +173,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 break;
 
             case Constant.MOSAIC:
-               glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
                 mEffectProgram = new MosaicTextureShaderProgram(mContext,
                         R.raw.mosaic_texture_shader_program);
@@ -228,6 +231,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      */
     private void initTexture() {
         mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
+        RendererUtil.CreateFireWorkTexture(mContext);
         mTexture = TextureHelper.loadOriginalTexture(mContext, mResourceId);
     }
 

@@ -15,6 +15,6 @@ void main()
      float dx = pixel * imageWidthFactor;
      float dy = pixel * imageHeightFactor;
      vec2 coord = vec2(dx * floor(uv.x / dx), dy * floor(uv.y / dy));
-     vec3 tc = texture2D(u_TextureUnit, coord).xyz;
+     vec3 tc = texture2D(u_TextureUnit, coord).rgb;
      gl_FragColor = vec4(tc, pointcolor.r);
 }
