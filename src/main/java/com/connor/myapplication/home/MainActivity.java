@@ -88,7 +88,6 @@ public class MainActivity extends Activity {
 
     public void FireWorks(View view) {
         Constant.CURRENT_USE_TYPE = Constant.FIREWORKS;
-        RendererUtil.CreateFireWorkTexture(MainActivity.this);
         PictureUtil.reSetStride();
     }
 

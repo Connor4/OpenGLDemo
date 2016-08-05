@@ -2,6 +2,7 @@ package com.connor.myapplication.util;
 
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
+import com.connor.myapplication.program.TextureHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -112,10 +113,12 @@ public class BezierUtil {
                 ObjectUtil.createBezierLine(mBezierResult);
                 break;
             case Constant.FIREWORKS:
-                ObjectUtil.createBezierLine(mBezierResult);
+                //需要每个点位置刚好接上，不能重叠
+               mDeleteLeftPoints = splicePoints(mBezierResult);
+                ObjectUtil.createBezierLine(mDeleteLeftPoints);
                 break;
             case Constant.WALLPAPER:
-                //先除去一些点
+                //需要先除去一些点
                 mDeleteLeftPoints = deletePoints(mBezierResult);
                 ObjectUtil.createBezierLine(mDeleteLeftPoints);
                 break;
@@ -132,23 +135,48 @@ public class BezierUtil {
     }
 
     /**
+     * 烟花笔处理，需要将点尽量拼接，连在一起会遮盖.
+     * 计算的距离由PictureUtil的固定间隔值得来
+     *
+     * @param list
+     * @return
+     */
+    private static ArrayList<PointBean> splicePoints(ArrayList<PointBean> list) {
+        ArrayList<PointBean> result = new ArrayList<>();
+        float distance;
+        PointBean first=list.get(0);
+        PointBean second = list.get(1);
+        result.add(first);
+
+        for (int i = 1; i < list.size()-1; i++) {
+            distance = calculateExactDistance(first, second);
+            if (distance > 50.0f) {
+                first = second;
+                result.add(second);
+            }
+            second = list.get(i + 1);
+        }
+        return result;
+    }
+
+    /**
      * 使用贴纸的时候，除去一些点，使得不连起来
-     *算法就是判断两点距离，够大就要，不够就不要
+     * 算法就是判断两点距离，够大就要，不够就不要
      */
     private static ArrayList<PointBean> deletePoints(ArrayList<PointBean> list) {
         ArrayList<PointBean> result = new ArrayList<>();
         float distance;
         if (mLastDeletePoint == null) {//第一次mLastDeletePoint会为null
-            distance = calculateDistance(list.get(0), list.get(list.size()-1));
+            distance = calculateDistance(list.get(0), list.get(list.size() - 1));
             if (distance > 10) {//距离大于10,两个点都要
-                mLastDeletePoint = list.get(list.size()-1);
+                mLastDeletePoint = list.get(list.size() - 1);
                 result.add(list.get(0));
                 result.add(mLastDeletePoint);
-            }else{//距离小于10,只要第一个点
+            } else {//距离小于10,只要第一个点
                 mLastDeletePoint = list.get(0);
                 result.add(mLastDeletePoint);
             }
-        }else{
+        } else {
             //这里mLastDeletePoint不为空，即不为第一次；先计算list第一个点和mLastDeletePoint距离是否
             // 符合选取，不符合； 计算list最后一个点和mLastDeletePoint是否可以。
             distance = calculateDistance(mLastDeletePoint, list.get(0));
@@ -170,7 +198,7 @@ public class BezierUtil {
      * 计算两点间距离,结果取数的级别
      */
     private static float calculateDistance(PointBean start, PointBean end) {
-        int result = 1;
+        float result = 1;
         float x = Math.abs(start.getX() - end.getX());
         float y = Math.abs(start.getY() - end.getY());
         String dis = (int) Math.sqrt(x * x + y * y) + "";
@@ -178,7 +206,20 @@ public class BezierUtil {
         for (int i = 1; i < level; ++i) {
             result *= 10;
         }
-        return (float) result;
+        return result;
+    }
+
+    /**
+     * 也是计算两点间距离，但是这个是结果准确的
+     * @param start
+     * @param end
+     * @return
+     */
+    private static float calculateExactDistance(PointBean start, PointBean end) {
+        float x = Math.abs(start.getX() - end.getX());
+        float y = Math.abs(start.getY() - end.getY());
+        float distance = (float)Math.sqrt((x * x + y * y));
+        return distance;
     }
 
 
@@ -186,27 +227,9 @@ public class BezierUtil {
      * 释放坐标对象
      */
     public static void releaseScreenPoints() {
-        if (mScreenPoints.size() != 0 && mScreenPoints != null) {
-            for (PointBean p : mScreenPoints) {
-                p = null;
-            }
-            mScreenPoints.clear();
-        }
-
-        if (mBezierResult.size() != 0 && mBezierResult != null) {
-            for (PointBean p : mBezierResult) {
-                p = null;
-            }
-            mBezierResult.clear();
-        }
-
-        if (mDeleteLeftPoints.size() != 0 && mDeleteLeftPoints != null) {
-            for (PointBean p : mDeleteLeftPoints) {
-                p = null;
-            }
-            mDeleteLeftPoints.clear();
-        }
-
+        mScreenPoints.clear();
+        mBezierResult.clear();
+        mDeleteLeftPoints.clear();
         addTimes = 0;
     }
 
@@ -215,14 +238,7 @@ public class BezierUtil {
      */
     public static void releasePoints() {
         releaseScreenPoints();
-
-        if (mBezierPoints.size() != 0 && mBezierPoints != null) {
-            for (PointBean p : mBezierPoints) {
-                p = null;
-            }
-            mBezierPoints.clear();
-        }
-
+        mBezierPoints.clear();
         mLastDeletePoint = null;
     }
 }

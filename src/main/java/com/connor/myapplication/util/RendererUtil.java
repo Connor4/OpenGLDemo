@@ -66,7 +66,7 @@ public class RendererUtil {
         }
         return mOtherProgram;
     }
-    //==============================end=============================
+    //===========================================================
 
     public static int[] mFireWorkTexture = new int[6];
 
