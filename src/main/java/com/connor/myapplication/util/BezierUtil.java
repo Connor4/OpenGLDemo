@@ -150,7 +150,7 @@ public class BezierUtil {
 
         for (int i = 1; i < list.size()-1; i++) {
             distance = calculateExactDistance(first, second);
-            if (distance > 50.0f) {
+            if (distance > 10.0f) {
                 first = second;
                 result.add(second);
             }

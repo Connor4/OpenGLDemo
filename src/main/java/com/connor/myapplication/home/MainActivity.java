@@ -3,13 +3,14 @@ package com.connor.myapplication.home;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -19,12 +20,15 @@ import com.connor.myapplication.util.BezierUtil;
 import com.connor.myapplication.util.FBOArrayUtil;
 import com.connor.myapplication.util.ObjectUtil;
 import com.connor.myapplication.util.PictureUtil;
-import com.connor.myapplication.util.RendererUtil;
 
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
     private int mResourceId;
+    /**
+     * 是否出现手势操作判断
+     */
+    private boolean gestureFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +38,7 @@ public class MainActivity extends Activity {
         mResourceId = bundle.getInt("id");
 
         Constant.CURRENT_USE_TYPE = Constant.PAINT;
+        Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
 
         setContentView(R.layout.activity_main);
 
@@ -56,26 +61,81 @@ public class MainActivity extends Activity {
 
                     final float currentX = event.getX();
                     final float currentY = event.getY();
+                    final float midX, midY, lastTouchX, lastTouchY;
+                    float newDist = 0.0f, oldDist = 0.0f, lastZoom = 0.0f;
+
 
                     switch (action) {
                         case MotionEvent.ACTION_DOWN:
+                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
+
                             ObjectUtil.setPointCoordinate(currentX, currentY);
                             //添加点，用于贝塞尔曲线
                             BezierUtil.addScreenPoint(currentX, currentY);
+
                             break;
+
+                        case MotionEvent.ACTION_POINTER_DOWN:
+                            oldDist = spacing(event);
+                            gestureFlag = true;
+
+                            break;
+
                         case MotionEvent.ACTION_MOVE:
-                            //点下来了继续滑动就画线
-                            BezierUtil.addScreenPoint(currentX, currentY);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            //排入SurfaceView队列，在它自己的线程离运行
-                            mGLSurfaceView.queueEvent(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mRenderer.drawInBackupFBO();
+                            if (gestureFlag) {
+                                newDist = spacing(event);
+                                //根据两指操作的距离判断是什么是什么操作
+                                float distance = distance(oldDist, newDist);
+
+                                //用两次距离判断操作
+                                if (distance < 10) {
+                                    Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAG;
+                                } else {
+                                    Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_ZOOM;
                                 }
-                            });
-                            BezierUtil.releasePoints();
+                            }
+
+
+                            if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_NORMAL) {
+                                //点下来了继续滑动就画线
+                                BezierUtil.addScreenPoint(currentX, currentY);
+
+                            } else if (Constant.CURRENT_GESTURE_MODE == Constant
+                                    .GESTURE_MODE_DRAG) {
+
+
+                            } else if (Constant.CURRENT_GESTURE_MODE == Constant
+                                    .GESTURE_MODE_ZOOM) {
+
+
+                            }
+
+                            oldDist = newDist;//新的赋值给旧的，给下一个移动计算
+
+                            break;
+
+                        case MotionEvent.ACTION_UP:
+                            if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_NORMAL) {
+                                //排入SurfaceView队列，在它自己的线程离运行
+                                mGLSurfaceView.queueEvent(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mRenderer.drawInBackupFBO();
+                                    }
+                                });
+                                BezierUtil.releasePoints();
+                            }
+
+                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
+
+                            break;
+                        case MotionEvent.ACTION_POINTER_UP:
+                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
+                            gestureFlag = false;
+                            oldDist = 0;
+
+                            break;
+
                         default:
                             break;
                     }
@@ -84,6 +144,40 @@ public class MainActivity extends Activity {
             }
         });
 
+    }
+
+    /**
+     * 求pointID0和1之间的距离
+     */
+    private float spacing(MotionEvent event) {
+        try {
+            float x = event.getX(0) - event.getX(1);
+            float y = event.getY(0) - event.getY(1);
+            return (float) Math.sqrt(x * x + y * y);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * 计算两次两指间距离，用来判断是什么操作
+     *
+     * @param Old
+     * @param New
+     * @return
+     */
+    private float distance(float Old, float New) {
+        return Math.abs(Old - New);
+    }
+
+    /**
+     * 求中点，用于缩放用
+     */
+    private void midPoint(PointF point, MotionEvent event) {
+        float x = event.getX(0) + event.getX(1);
+        float y = event.getY(0) + event.getY(1);
+        point.set(x / 2, y / 2);
     }
 
     public void FireWorks(View view) {

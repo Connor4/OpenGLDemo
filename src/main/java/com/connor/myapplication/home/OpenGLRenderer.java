@@ -3,6 +3,7 @@ package com.connor.myapplication.home;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.GLU;
 import android.util.Log;
 
 import com.connor.myapplication.R;
@@ -44,7 +45,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private int mTexture;
     private int mPointTexture;
-    private int mFireWorkTexture;
+//    private int mFireWorkTexture;
     private int mTargetTexture;
     private int mReturnTexture;
 
@@ -123,8 +124,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     /**
      * 离屏渲染
      */
-    private void drawOffscreen(int x, int y, int width, int height) {
-        glViewport(x, y, width, height);
+    private void drawOffscreen(int width, int height) {
+        glViewport(0, 0, width, height);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -166,7 +167,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 mRoot.draw(RendererUtil.CreateChangeProgram(mContext),
                         mCurrentOtherTextureIndex[0]);
 
-                glDeleteProgram(Constant.CURRENT_OTHERPROGRAM_INDEX);
+                glDeleteProgram(Constant.CURRENT_OTHER_PROGRAM_INDEX);
                 glDeleteTextures(1, mCurrentOtherTextureIndex, 0);
 
                 glDisable(GL_BLEND);
@@ -262,7 +263,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, FrameBuffer);
 
-        drawOffscreen(0, 0, Constant.TextureWidth, Constant.TextureHeight);
+        drawOffscreen(Constant.TextureWidth, Constant.TextureHeight);
 
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, 0);

@@ -32,7 +32,7 @@ public class OtherTextureShaderProgram extends TextureShaderProgram {
 
 //        switch (Constant.CURRENT_USE_TYPE) {
 //            case Constant.WALLPAPER:
-                Constant.CURRENT_OTHERPROGRAM_INDEX = program;
+                Constant.CURRENT_OTHER_PROGRAM_INDEX = program;
 //                break;
 //            case Constant.FIREWORKS:
 //                Constant.CURRENT_FIREWORKPROGARM_INDEX = program;
