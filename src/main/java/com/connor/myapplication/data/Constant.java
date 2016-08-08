@@ -14,10 +14,17 @@ public class Constant {
     public static final int FIREWORKS = 0x0009;//使用烟花笔
     public static int CURRENT_USE_TYPE = PAINT;//当前使用
     //===================end=========================
+    //===================start=========================
+    public static final int GESTURE_MODE_NORMAL = 0x000A;//正常画
+    public static final int GESTURE_MODE_DRAG = 0x000B;//拖拽
+    public static final int GESTURE_MODE_ZOOM = 0x000C;//缩放
+    public static final int GESTURE_MODE_GONE = 0x000F;//手势失效
+    public static int CURRENT_GESTURE_MODE = GESTURE_MODE_NORMAL;//默认正常
+    //===================end=========================
     /**
      * 记录当前otherProgram序号,删除时使用
      */
-    public static int CURRENT_OTHERPROGRAM_INDEX ;
+    public static int CURRENT_OTHER_PROGRAM_INDEX ;
     /**
      * 记录当前fireworkprogram需要，删除时使用
      */

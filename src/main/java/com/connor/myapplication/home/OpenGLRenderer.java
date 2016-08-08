@@ -3,6 +3,7 @@ package com.connor.myapplication.home;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.GLU;
 import android.util.Log;
 
 import com.connor.myapplication.R;
@@ -44,7 +45,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private int mTexture;
     private int mPointTexture;
-    private int mFireWorkTexture;
+//    private int mFireWorkTexture;
     private int mTargetTexture;
     private int mReturnTexture;
 
@@ -166,7 +167,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 mRoot.draw(RendererUtil.CreateChangeProgram(mContext),
                         mCurrentOtherTextureIndex[0]);
 
-                glDeleteProgram(Constant.CURRENT_OTHERPROGRAM_INDEX);
+                glDeleteProgram(Constant.CURRENT_OTHER_PROGRAM_INDEX);
                 glDeleteTextures(1, mCurrentOtherTextureIndex, 0);
 
                 glDisable(GL_BLEND);
