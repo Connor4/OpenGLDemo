@@ -25,6 +25,10 @@ public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
     private int mResourceId;
+    /**
+     * 是否出现手势操作判断
+     */
+    private boolean gestureFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +61,9 @@ public class MainActivity extends Activity {
 
                     final float currentX = event.getX();
                     final float currentY = event.getY();
-                    final float midX, midY, LastTouchX, LastTouchY;
-                    float NewDist = 0.0f, OldDist = 0.0f, LastZoom = 0.0f;
-                    boolean gestureFlag = false;
+                    final float midX, midY, lastTouchX, lastTouchY;
+                    float newDist = 0.0f, oldDist = 0.0f, lastZoom = 0.0f;
+
 
                     switch (action) {
                         case MotionEvent.ACTION_DOWN:
@@ -68,25 +72,27 @@ public class MainActivity extends Activity {
                             ObjectUtil.setPointCoordinate(currentX, currentY);
                             //添加点，用于贝塞尔曲线
                             BezierUtil.addScreenPoint(currentX, currentY);
+
                             break;
 
                         case MotionEvent.ACTION_POINTER_DOWN:
-                            OldDist = spacing(event);
+                            oldDist = spacing(event);
                             gestureFlag = true;
+
                             break;
 
                         case MotionEvent.ACTION_MOVE:
                             if (gestureFlag) {
-                                NewDist = spacing(event);
-//                            //根据两指操作的距离判断是什么是什么操作
-                                float distance = distance(OldDist, NewDist);
-//                            Log.d("TAG", "distance " + distance);
-//                            //用两次距离判断操作
-//                            if (distance < 10) {
-//                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAG;
-//                            } else {
-//                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_ZOOM;
-//                            }
+                                newDist = spacing(event);
+                                //根据两指操作的距离判断是什么是什么操作
+                                float distance = distance(oldDist, newDist);
+
+                                //用两次距离判断操作
+                                if (distance < 10) {
+                                    Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAG;
+                                } else {
+                                    Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_ZOOM;
+                                }
                             }
 
 
@@ -104,7 +110,8 @@ public class MainActivity extends Activity {
 
                             }
 
-                            OldDist = NewDist;
+                            oldDist = newDist;//新的赋值给旧的，给下一个移动计算
+
                             break;
 
                         case MotionEvent.ACTION_UP:
@@ -121,8 +128,12 @@ public class MainActivity extends Activity {
 
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
 
+                            break;
                         case MotionEvent.ACTION_POINTER_UP:
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
+                            gestureFlag = false;
+                            oldDist = 0;
+
                             break;
 
                         default:
@@ -151,6 +162,7 @@ public class MainActivity extends Activity {
 
     /**
      * 计算两次两指间距离，用来判断是什么操作
+     *
      * @param Old
      * @param New
      * @return

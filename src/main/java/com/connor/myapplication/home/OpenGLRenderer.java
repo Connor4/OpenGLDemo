@@ -124,8 +124,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     /**
      * 离屏渲染
      */
-    private void drawOffscreen(int x, int y, int width, int height) {
-        glViewport(x, y, width, height);
+    private void drawOffscreen(int width, int height) {
+        glViewport(0, 0, width, height);
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -263,7 +263,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, FrameBuffer);
 
-        drawOffscreen(0, 0, Constant.TextureWidth, Constant.TextureHeight);
+        drawOffscreen(Constant.TextureWidth, Constant.TextureHeight);
 
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, 0);
