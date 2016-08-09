@@ -5,6 +5,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
 import android.util.Log;
+import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
@@ -71,14 +72,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
         initProgram();
         initTexture();
-    }
 
-    @Override
-    public void onSurfaceChanged(GL10 gl, int width, int height) {
-        glViewport(0, 0, width, height);
-        Constant.mSurfaceViewWidth = width;
-        Constant.mSurfaceViewHeight = height;
-        //因为SurfaceView布局没有设置SurfaceView的宽高，所以只能在这里创建
         mBackGround = new BackGround();//屏幕渲染使用
         mFBOBackGround = new FBOBackGround();//离屏渲染使用
         //给撤销的用
@@ -87,6 +81,11 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mTargetTexture = mArrayUtil.createTargetTexture(Constant.TextureWidth, Constant
                 .TextureHeight);
         mFramebuffer = mArrayUtil.createFrameBuffer(mTargetTexture);
+    }
+
+    @Override
+    public void onSurfaceChanged(GL10 gl, int width, int height) {
+        glViewport(0, 0, width, height);
     }
 
     @Override
@@ -267,5 +266,24 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glBindFramebuffer(
                 GLES20.GL_FRAMEBUFFER, 0);
+    }
+
+    /**
+     * 处理拖拽手势，返回boolean是为了和处理拖拽一样
+     * @param ev
+     * @return
+     */
+    public boolean handleDragGesture(MotionEvent ev){
+        return true;
+    }
+
+    /**
+     * 处理缩放手势，返回true和false表示
+     * @param ev
+     * @return
+     */
+    public boolean handlePinchGesture(MotionEvent ev)
+    {
+        return false;
     }
 }
