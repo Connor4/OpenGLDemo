@@ -29,7 +29,7 @@ public class PointBean {
     }
 
     public float getZ() {
-            return z;
+        return z;
     }
 
     public void setX(float x) {

@@ -1,9 +1,9 @@
 package com.connor.myapplication.home;
 
 import android.content.Context;
+import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLU;
 import android.util.Log;
 import android.view.MotionEvent;
 
@@ -14,7 +14,6 @@ import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
-import com.connor.myapplication.util.PictureUtil;
 import com.connor.myapplication.util.RendererUtil;
 import com.connor.myapplication.util.SaveUtil;
 
@@ -34,7 +33,7 @@ import static android.opengl.GLES20.glDisable;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glViewport;
 
-public class OpenGLRenderer implements GLSurfaceView.Renderer {
+public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.GestureHandleCallback {
     private TextureShaderProgram mTextureProgram;
     private TextureShaderProgram mPointProgram;
     private TextureShaderProgram mEraserProgram;
@@ -46,7 +45,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private int mTexture;
     private int mPointTexture;
-//    private int mFireWorkTexture;
+    //    private int mFireWorkTexture;
     private int mTargetTexture;
     private int mReturnTexture;
 
@@ -57,6 +56,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public boolean mDrawLast;
     public boolean mDrawNext;
     public boolean mSavePic;
+    //=======手势部分start======
+    private PointF mLastTouchPoint = new PointF();
+    private PointF mCurrentTouchPoint = new PointF();
+    private int mCurrentViewPortX;
+    private int mCurrentViewPortY;
+    private int mCurrentViewPortWidth;
+    private int mCurrentViewPortHeight;
+    //=======手势部分end======
 
 
     public OpenGLRenderer(Context mContext, int resourceId) {
@@ -81,11 +88,17 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mTargetTexture = mArrayUtil.createTargetTexture(Constant.TextureWidth, Constant
                 .TextureHeight);
         mFramebuffer = mArrayUtil.createFrameBuffer(mTargetTexture);
+
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
+        //设置视角，改变位置时用
+        mCurrentViewPortX = 0;
+        mCurrentViewPortY = 0;
+        mCurrentViewPortWidth = Constant.mSurfaceViewWidth;
+        mCurrentViewPortHeight = Constant.mSurfaceViewHeight;
     }
 
     @Override
@@ -93,30 +106,36 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (mSavePic) {
+        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
+            glViewport(mCurrentViewPortX, mCurrentViewPortY, mCurrentViewPortWidth,
+                    mCurrentViewPortHeight);
             drawOnscreen();
-            SaveUtil.takeScreenShot(gl);
-            mSavePic = false;
         } else {
-            if (mDrawLast) {
-                mReturnTexture = mArrayUtil.getLastTexture();
-                if (mReturnTexture == -1) {
-                    mDrawLast = false;
+            if (mSavePic) {
+                drawOnscreen();
+                SaveUtil.takeScreenShot(gl);
+                mSavePic = false;
+            } else {
+                if (mDrawLast) {
+                    mReturnTexture = mArrayUtil.getLastTexture();
+                    if (mReturnTexture == -1) {
+                        mDrawLast = false;
+                    }
                 }
-            }
 
-            if (mDrawNext) {
-                mReturnTexture = mArrayUtil.getNextTexture();
-                if (mReturnTexture == -1) {
-                    mDrawNext = false;
+                if (mDrawNext) {
+                    mReturnTexture = mArrayUtil.getNextTexture();
+                    if (mReturnTexture == -1) {
+                        mDrawNext = false;
+                    }
                 }
+
+                drawInFrameBuffer(mFramebuffer);
+                //因为在FBO画的时候改变了视角，需要重新改变视角
+                glViewport(mCurrentViewPortX, mCurrentViewPortY, mCurrentViewPortWidth,
+                        mCurrentViewPortHeight);
+                drawOnscreen();
             }
-
-            drawInFrameBuffer(mFramebuffer);
-            //因为在FBO画的时候改变了视角，需要重新改变视角
-            glViewport(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
-
-            drawOnscreen();
         }
     }
 
@@ -148,14 +167,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 glDisable(GL_BLEND);
                 break;
 
-            case Constant.FIREWORKS:
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
-                        .SelectFireWorkTexture());
-
-                glDisable(GL_BLEND);
-                break;
+//            case Constant.FIREWORKS:
+//                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//                RendererUtil.CreateFireWorkTexture(mContext);
+//                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
+//                        .SelectFireWorkTexture());
+//
+//                glDisable(GL_BLEND);
+//                break;
 
             case Constant.WALLPAPER:
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -231,7 +250,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      */
     private void initTexture() {
         mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
-        RendererUtil.CreateFireWorkTexture(mContext);
         mTexture = TextureHelper.loadOriginalTexture(mContext, mResourceId);
     }
 
@@ -244,6 +262,13 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         drawInFrameBuffer(mFramebuffer);
         drawInFrameBuffer(mArrayUtil.getFrameBuffer());
         mRoot.clear();
+    }
+
+    public void freeGesturePointF(){
+        mCurrentTouchPoint.x  =0;
+        mCurrentTouchPoint.y=0;
+        mLastTouchPoint.x= 0;
+        mLastTouchPoint.y=0;
     }
 
 
@@ -268,22 +293,29 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 GLES20.GL_FRAMEBUFFER, 0);
     }
 
-    /**
-     * 处理拖拽手势，返回boolean是为了和处理拖拽一样
-     * @param ev
-     * @return
-     */
-    public boolean handleDragGesture(MotionEvent ev){
+    @Override
+    public boolean handleDragGesture(MotionEvent event) {
+        //计算视角偏移,X,Y方向分开算。
+        //只要算坐标原点就可以了，用这两个点改变就可以平移
+        mCurrentViewPortX += mCurrentTouchPoint.x - mLastTouchPoint.x;
+        mCurrentViewPortY -= mCurrentTouchPoint.y - mLastTouchPoint.y;
+
+        mLastTouchPoint.x = mCurrentTouchPoint.x;
+        mLastTouchPoint.y = mCurrentTouchPoint.y;
+        Log.d("TAG", "LAST " + mLastTouchPoint.x + " LAST " + mLastTouchPoint.y);
+        Log.d("TAG", "Current " + mCurrentTouchPoint.x + " Current " + mCurrentTouchPoint.y);
+
+
+        mCurrentTouchPoint.x = event.getX();
+        mCurrentTouchPoint.y = event.getY();
+
         return true;
     }
 
-    /**
-     * 处理缩放手势，返回true和false表示
-     * @param ev
-     * @return
-     */
-    public boolean handlePinchGesture(MotionEvent ev)
-    {
+    @Override
+    public boolean handlePinchGesture(MotionEvent event) {
         return false;
     }
+
+
 }

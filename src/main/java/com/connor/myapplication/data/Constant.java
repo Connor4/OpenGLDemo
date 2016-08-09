@@ -18,7 +18,7 @@ public class Constant {
     public static final int GESTURE_MODE_NORMAL = 0x000A;//正常画
     public static final int GESTURE_MODE_DRAG = 0x000B;//拖拽
     public static final int GESTURE_MODE_ZOOM = 0x000C;//缩放
-    public static final int GESTURE_MODE_GONE = 0x000F;//手势失效
+    public static final int GESTURE_MODE_GONE = 0x000D;//手势失效
     public static int CURRENT_GESTURE_MODE = GESTURE_MODE_NORMAL;//默认正常
     //===================end=========================
     /**

@@ -8,6 +8,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,10 +26,13 @@ public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
     private int mResourceId;
-    /**
-     * 是否出现手势操作判断
-     */
-    private boolean gestureFlag = false;
+
+    private boolean gestureFlag = false;//是否出现手势操作判断
+    final PointF mCurrentTouchPoint = new PointF();
+    PointF mMidPoint = new PointF();
+    PointF mLastTouchPoint = new PointF();
+    boolean retravel = true;
+    float newDist = 0.0f, oldDist = 0.0f, lastZoom = 0.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +55,14 @@ public class MainActivity extends Activity {
 
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.main);
         rl.addView(mGLSurfaceView);
+
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
+        mGestureHandleCallback = mRenderer;
 
         mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
+            public boolean onTouch(View v, final MotionEvent event) {
+
                 if (event != null) {
 
                     final int action = MotionEventCompat.getActionMasked(event);
@@ -63,7 +70,6 @@ public class MainActivity extends Activity {
                     final float currentX = event.getX();
                     final float currentY = event.getY();
                     final float midX, midY, lastTouchX, lastTouchY;
-                    float newDist = 0.0f, oldDist = 0.0f, lastZoom = 0.0f;
 
 
                     switch (action) {
@@ -103,21 +109,17 @@ public class MainActivity extends Activity {
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAG) {
-                                mGLSurfaceView.queueEvent(new Runnable() {
-                                    @Override
-                                    public void run() {
 
-                                    }
-                                });
+                                edgeTest();
+                                retravel = mGestureHandleCallback.handleDragGesture(event);
+                                mGLSurfaceView.requestRender();
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_ZOOM) {
-                                mGLSurfaceView.queueEvent(new Runnable() {
-                                    @Override
-                                    public void run() {
 
-                                    }
-                                });
+                                edgeTest();
+                                //                 retravel = mGestureHandleCallback
+                                // .handlePinchGesture(event);
 
                             }
 
@@ -134,25 +136,30 @@ public class MainActivity extends Activity {
                                         mRenderer.drawInBackupFBO();
                                     }
                                 });
+                            } else if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
+                                mGLSurfaceView.queueEvent(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mRenderer.freeGesturePointF();
+                                    }
+                                });
                             }
-
 
                             BezierUtil.releasePoints();
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
 
                             break;
+
                         case MotionEvent.ACTION_POINTER_UP:
-                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             gestureFlag = false;
                             oldDist = 0;
-
                             break;
 
                         default:
                             break;
                     }
                 }
-                return true;
+                return retravel;
             }
         });
 
@@ -162,14 +169,15 @@ public class MainActivity extends Activity {
      * 求pointID0和1之间的距离
      */
     private float spacing(MotionEvent event) {
+        float x = 0;
+        float y = 0;
         try {
-            float x = event.getX(0) - event.getX(1);
-            float y = event.getY(0) - event.getY(1);
-            return (float) Math.sqrt(x * x + y * y);
+            x = event.getX(0) - event.getX(1);
+            y = event.getY(0) - event.getY(1);
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
-        return 0;
+        return (float) Math.sqrt(x * x + y * y);
     }
 
     /**
@@ -270,13 +278,13 @@ public class MainActivity extends Activity {
         }
         return false;
     }
+//=====================手势部分start===========================
 
     /**
      * 通过布局中weight简单计算出SurfaceView宽高
      */
     private void calculateSurfaceSize() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        int k = getStatusHeight();
         Constant.mSurfaceViewWidth = dm.widthPixels;
         Constant.mSurfaceViewHeight = (int) ((dm.heightPixels - getStatusHeight()) * 0.9f);
     }
@@ -298,5 +306,21 @@ public class MainActivity extends Activity {
         return statusHeight;
     }
 
+    /**
+     * 边界测试，超过边界就逐渐变回最开始的位置
+     */
+    private void edgeTest() {
 
+    }
+
+    private GestureHandleCallback mGestureHandleCallback;
+
+
+    public interface GestureHandleCallback {
+        boolean handleDragGesture(MotionEvent event);
+
+        boolean handlePinchGesture(MotionEvent event);
+    }
+
+//=====================手势部分end=========================
 }

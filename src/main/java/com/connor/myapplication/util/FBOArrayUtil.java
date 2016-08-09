@@ -12,8 +12,8 @@ import java.util.LinkedList;
  * Created by meitu on 2016/7/9.
  */
 public class FBOArrayUtil {
-    public static int[] TargetTextureArray = new int[10];
-    public static int[] FrameBufferArray = new int[10];
+    public  int[] TargetTextureArray = new int[10];
+    public  int[] FrameBufferArray = new int[10];
 
     private int mSurfaceViewWidth;
     private int mSurfaceViewHeight;
@@ -203,21 +203,6 @@ public class FBOArrayUtil {
         GLES20.glGenFramebuffers(1, framebuffers, 0);
         framebuffer = framebuffers[0];
         GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, framebuffer);
-
-        //没使用到深度挂载点
-    /*    int depthbuffer;
-        int[] renderbuffers = new int[1];
-        GLES20.glGenRenderbuffers(1, renderbuffers, 0);
-        depthbuffer = renderbuffers[0];
-
-        GLES20.glBindRenderbuffer(GLES20.GL_RENDERBUFFER, depthbuffer);
-        GLES20.glRenderbufferStorage(
-                GLES20.GL_RENDERBUFFER,
-                GLES20.GL_DEPTH_COMPONENT16, width, height);
-        GLES20.glFramebufferRenderbuffer(
-                GLES20.GL_FRAMEBUFFER,
-                GLES20.GL_DEPTH_ATTACHMENT,
-                GLES20.GL_RENDERBUFFER, depthbuffer);*/
 
         GLES20.glFramebufferTexture2D(
                 GLES20.GL_FRAMEBUFFER,
