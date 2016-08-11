@@ -273,10 +273,15 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      * 释放记录缩放平移位置的PointF
      */
     public void freeGesturePointF() {
+        //=======平移========
         mCurrentTouchPoint.x = 0;
         mCurrentTouchPoint.y = 0;
         mLastTouchPoint.x = 0;
         mLastTouchPoint.y = 0;
+        //=======缩放======
+        mZoom = 0;
+        mNewDist = 0;
+        mOldDist = 0;
     }
 
 
@@ -316,8 +321,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             mCurrentViewPortX += mCurrentTouchPoint.x - mLastTouchPoint.x;
             mCurrentViewPortY -= mCurrentTouchPoint.y - mLastTouchPoint.y;
         }
-
-
         return true;
     }
 
@@ -329,13 +332,20 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mMidPoint, event);
-            float xMiddle = mMidPoint.x - mCurrentViewPortX;
-            float yMiddle = Constant.mSurfaceViewHeight - mMidPoint.y - mCurrentViewPortY;
+            float xIncrement = calculateXIncrement();
+            float yIncrement = calculateYIncrement();
+            //        Log.d("TAG", "x    " + xIncrement + "   y   " + yIncrement);
 
-            mCurrentViewPortX += (int) (xMiddle * mZoom);
-            mCurrentViewPortY += (int) (yMiddle *mZoom);
+//            mCurrentViewPortX += (int) (mMidPoint.x - xMiddle * mZoom);
+//            mCurrentViewPortY += (int) (Constant.mSurfaceViewHeight - mMidPoint.y - yMiddle *
+//                    mZoom);
+//            mCurrentViewPortX += xIncrement;
+//            mCurrentViewPortY += yIncrement;
+            mZoom = ((float) Math.round(mZoom * 10)) / 10;
+
             mCurrentViewPortWidth *= mZoom;
             mCurrentViewPortHeight *= mZoom;
+
         }
 
         return true;
@@ -364,6 +374,39 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         float y = event.getY(0) + event.getY(1);
         point.set(x / 2, y / 2);
     }
+
+    /**
+     * 返回X上缩放增量
+     */
+    private float calculateXIncrement() {
+        return mCurrentViewPortWidth * (1 - mZoom);
+    }
+
+    /**
+     * 返回Y上缩放增量
+     */
+    private float calculateYIncrement() {
+        return mCurrentViewPortHeight * (1 - mZoom);
+    }
+
+    /**
+     * 分配算出的X增量，用于后面计算VIEWPORT的X
+     * 返回int是因为便于之后计算是用整形
+     * 用SurfaceView的宽去计算因为是按比例缩放的，所以用这个和用当前的width也一样
+     */
+    private int distributeXIncrement(float XIncrement) {
+        return 0;
+    }
+
+    /**
+     * 分配算出的X增量，用于后面计算VIEWPORT的X
+     * 返回int是因为便于之后计算是用整形
+     * 用SurfaceView的高去计算因为是按比例缩放的，所以用这个和用当前的width也一样
+     */
+    private int distributeYIncrement(float YIncrement) {
+        return 0;
+    }
+
 
     //===================手势部分end========================
 
