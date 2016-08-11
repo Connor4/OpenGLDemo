@@ -62,10 +62,10 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     private PointF mMidPoint = new PointF();
     private float mNewDist = 0f, mOldDist = 0f;
     private float mZoom = 0f;
-    private int mCurrentViewPortX;
-    private int mCurrentViewPortY;
-    private int mCurrentViewPortWidth;
-    private int mCurrentViewPortHeight;
+    private float mCurrentViewPortX;
+    private float mCurrentViewPortY;
+    private float mCurrentViewPortWidth;
+    private float mCurrentViewPortHeight;
     //=======手势部分end======
 
 
@@ -111,8 +111,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG || Constant
                 .CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_ZOOM) {
-            glViewport(mCurrentViewPortX, mCurrentViewPortY, mCurrentViewPortWidth,
-                    mCurrentViewPortHeight);
+            glViewport((int)mCurrentViewPortX, (int)mCurrentViewPortY, (int)mCurrentViewPortWidth,
+                    (int)mCurrentViewPortHeight);
             drawOnscreen();
         } else {
             if (mSavePic) {
@@ -136,8 +136,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
                 drawInFrameBuffer(mFramebuffer);
                 //因为在FBO画的时候改变了视角，需要重新改变视角
-                glViewport(mCurrentViewPortX, mCurrentViewPortY, mCurrentViewPortWidth,
-                        mCurrentViewPortHeight);
+                glViewport((int)mCurrentViewPortX, (int)mCurrentViewPortY, (int)mCurrentViewPortWidth,
+                        (int)mCurrentViewPortHeight);
                 drawOnscreen();
             }
         }
@@ -325,27 +325,28 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     @Override
-    public boolean handlePinchGesture(MotionEvent event) {
-        mOldDist = mNewDist;
-        mNewDist = spacing(event);
-        mZoom = mNewDist / mOldDist;
+    public boolean handlePinchGesture(int distance) {
 
-        if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
-            midPoint(mMidPoint, event);
-            float xIncrement = calculateXIncrement();
-            float yIncrement = calculateYIncrement();
+//        mOldDist = mNewDist;
+//        mNewDist = distance;
+//        mZoom = mNewDist / mOldDist;
+
+ //       if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
+//            midPoint(mMidPoint, event);
+//            float xIncrement = calculateXIncrement();
+//            float yIncrement = calculateYIncrement();
+            //        Log.d("TAG", "x    " + xIncrement + "   y   " + yIncrement);
 
 //            mCurrentViewPortX += (int) (mMidPoint.x - xMiddle * mZoom);
 //            mCurrentViewPortY += (int) (Constant.mSurfaceViewHeight - mMidPoint.y - yMiddle *
 //                    mZoom);
 //            mCurrentViewPortX += xIncrement;
 //            mCurrentViewPortY += yIncrement;
-            mZoom = ((float) Math.round(mZoom * 10)) / 10;
+ //           mZoom = ((float) Math.round(mZoom * 10)) / 10;
 
-            mCurrentViewPortWidth *= mZoom;
-            mCurrentViewPortHeight *= mZoom;
-
-        }
+//            mCurrentViewPortWidth *= mZoom;
+  //          mCurrentViewPortHeight *= mZoom;
+ //       }
 
         return true;
     }
