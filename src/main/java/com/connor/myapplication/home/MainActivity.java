@@ -3,12 +3,9 @@ package com.connor.myapplication.home;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.graphics.PointF;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -27,12 +24,9 @@ public class MainActivity extends Activity {
     private static OpenGLRenderer mRenderer;
     private int mResourceId;
 
-    private boolean gestureFlag = false;//是否出现手势操作判断
-    final PointF mCurrentTouchPoint = new PointF();
-    PointF mMidPoint = new PointF();
-    PointF mLastTouchPoint = new PointF();
-    boolean retravel = true;
-    float newDist = 0.0f, oldDist = 0.0f, lastZoom = 0.0f;
+    private boolean mGestureFlag = false;//是否出现手势操作判断
+    private boolean mReTravel = true;
+    private float mNewDist = 0.0f, mOldDist = 0.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +39,6 @@ public class MainActivity extends Activity {
         Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
 
         setContentView(R.layout.activity_main);
-        calculateSurfaceSize();
 
         mGLSurfaceView = new GLSurfaceView(this);
         mRenderer = new OpenGLRenderer(this, mResourceId);
@@ -69,10 +62,8 @@ public class MainActivity extends Activity {
 
                     final float currentX = event.getX();
                     final float currentY = event.getY();
-                    final float midX, midY, lastTouchX, lastTouchY;
 
-
-                    switch (action) {
+                    switch (action & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_DOWN:
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
 
@@ -83,16 +74,16 @@ public class MainActivity extends Activity {
                             break;
 
                         case MotionEvent.ACTION_POINTER_DOWN:
-                            oldDist = spacing(event);
-                            gestureFlag = true;
+                            mOldDist = spacing(event);
+                            mGestureFlag = true;
 
                             break;
 
                         case MotionEvent.ACTION_MOVE:
-                            if (gestureFlag) {
-                                newDist = spacing(event);
+                            if (mGestureFlag) {
+                                mNewDist = spacing(event);
                                 //根据两指操作的距离判断是什么是什么操作
-                                float distance = distance(oldDist, newDist);
+                                float distance = distance(mOldDist, mNewDist);
 
                                 //用两次距离判断操作
                                 if (distance < 10) {
@@ -110,20 +101,20 @@ public class MainActivity extends Activity {
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAG) {
 
-                                edgeTest();
-                                retravel = mGestureHandleCallback.handleDragGesture(event);
-                                mGLSurfaceView.requestRender();
+//                                edgeTest();
+//                                mReTravel = mGestureHandleCallback.handleDragGesture(event);
+//                                mGLSurfaceView.requestRender();
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_ZOOM) {
 
                                 edgeTest();
-                                //                 retravel = mGestureHandleCallback
-                                // .handlePinchGesture(event);
+                                mReTravel = mGestureHandleCallback.handlePinchGesture(event);
+                                mGLSurfaceView.requestRender();
 
                             }
 
-                            oldDist = newDist;//新的赋值给旧的，给下一个移动计算
+                            mOldDist = mNewDist;//新的赋值给旧的，给下一个移动计算
 
                             break;
 
@@ -136,7 +127,7 @@ public class MainActivity extends Activity {
                                         mRenderer.drawInBackupFBO();
                                     }
                                 });
-                            } else if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
+                            } else if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_GONE) {
                                 mGLSurfaceView.queueEvent(new Runnable() {
                                     @Override
                                     public void run() {
@@ -151,54 +142,21 @@ public class MainActivity extends Activity {
                             break;
 
                         case MotionEvent.ACTION_POINTER_UP:
-                            gestureFlag = false;
-                            oldDist = 0;
+                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
+                            mGestureFlag = false;
+                            mOldDist = 0;
                             break;
 
                         default:
                             break;
                     }
                 }
-                return retravel;
+                return mReTravel;
             }
         });
 
     }
 
-    /**
-     * 求pointID0和1之间的距离
-     */
-    private float spacing(MotionEvent event) {
-        float x = 0;
-        float y = 0;
-        try {
-            x = event.getX(0) - event.getX(1);
-            y = event.getY(0) - event.getY(1);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        return (float) Math.sqrt(x * x + y * y);
-    }
-
-    /**
-     * 计算两次两指间距离，用来判断是什么操作
-     *
-     * @param Old
-     * @param New
-     * @return
-     */
-    private float distance(float Old, float New) {
-        return Math.abs(Old - New);
-    }
-
-    /**
-     * 求中点，用于缩放用
-     */
-    private void midPoint(PointF point, MotionEvent event) {
-        float x = event.getX(0) + event.getX(1);
-        float y = event.getY(0) + event.getY(1);
-        point.set(x / 2, y / 2);
-    }
 
     public void FireWorks(View view) {
         Constant.CURRENT_USE_TYPE = Constant.FIREWORKS;
@@ -281,30 +239,27 @@ public class MainActivity extends Activity {
 //=====================手势部分start===========================
 
     /**
-     * 通过布局中weight简单计算出SurfaceView宽高
+     * 求pointID0和1之间的距离
      */
-    private void calculateSurfaceSize() {
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        Constant.mSurfaceViewWidth = dm.widthPixels;
-        Constant.mSurfaceViewHeight = (int) ((dm.heightPixels - getStatusHeight()) * 0.9f);
+    private float spacing(MotionEvent event) {
+        float x = 0;
+        float y = 0;
+        try {
+            x = event.getX(0) - event.getX(1);
+            y = event.getY(0) - event.getY(1);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        return (float) Math.sqrt(x * x + y * y);
     }
 
     /**
-     * 获取通知栏高度
+     * 计算两次两指间距离，用来判断是什么操作
      */
-    private int getStatusHeight() {
-        int statusHeight = -1;
-        try {
-            Class<?> clazz = Class.forName("com.android.internal.R$dimen");
-            Object object = clazz.newInstance();
-            int height = Integer.parseInt(clazz.getField("status_bar_height")
-                    .get(object).toString());
-            statusHeight = getResources().getDimensionPixelSize(height);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return statusHeight;
+    private float distance(float Old, float New) {
+        return Math.abs(Old - New);
     }
+
 
     /**
      * 边界测试，超过边界就逐渐变回最开始的位置

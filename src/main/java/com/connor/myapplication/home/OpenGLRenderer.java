@@ -59,6 +59,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     //=======手势部分start======
     private PointF mLastTouchPoint = new PointF();
     private PointF mCurrentTouchPoint = new PointF();
+    private PointF mMidPoint = new PointF();
+    private float mNewDist = 0f, mOldDist = 0f;
+    private float mZoom = 0f;
     private int mCurrentViewPortX;
     private int mCurrentViewPortY;
     private int mCurrentViewPortWidth;
@@ -106,7 +109,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
+        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG || Constant
+                .CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_ZOOM) {
             glViewport(mCurrentViewPortX, mCurrentViewPortY, mCurrentViewPortWidth,
                     mCurrentViewPortHeight);
             drawOnscreen();
@@ -167,14 +171,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
                 glDisable(GL_BLEND);
                 break;
 
-//            case Constant.FIREWORKS:
-//                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//                RendererUtil.CreateFireWorkTexture(mContext);
-//                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
-//                        .SelectFireWorkTexture());
-//
-//                glDisable(GL_BLEND);
-//                break;
+            case Constant.FIREWORKS:
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
+                        .SelectFireWorkTexture());
+
+                glDisable(GL_BLEND);
+                break;
 
             case Constant.WALLPAPER:
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -250,6 +254,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      */
     private void initTexture() {
         mPointTexture = TextureHelper.loadTexture(mContext, R.drawable.cover);
+        RendererUtil.CreateFireWorkTexture(mContext);//不应该放这里
         mTexture = TextureHelper.loadOriginalTexture(mContext, mResourceId);
     }
 
@@ -264,11 +269,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mRoot.clear();
     }
 
-    public void freeGesturePointF(){
-        mCurrentTouchPoint.x  =0;
-        mCurrentTouchPoint.y=0;
-        mLastTouchPoint.x= 0;
-        mLastTouchPoint.y=0;
+    /**
+     * 释放记录缩放平移位置的PointF
+     */
+    public void freeGesturePointF() {
+        mCurrentTouchPoint.x = 0;
+        mCurrentTouchPoint.y = 0;
+        mLastTouchPoint.x = 0;
+        mLastTouchPoint.y = 0;
     }
 
 
@@ -293,29 +301,70 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
                 GLES20.GL_FRAMEBUFFER, 0);
     }
 
+    //===================手势部分start========================
     @Override
     public boolean handleDragGesture(MotionEvent event) {
-        //计算视角偏移,X,Y方向分开算。
-        //只要算坐标原点就可以了，用这两个点改变就可以平移
-        mCurrentViewPortX += mCurrentTouchPoint.x - mLastTouchPoint.x;
-        mCurrentViewPortY -= mCurrentTouchPoint.y - mLastTouchPoint.y;
-
         mLastTouchPoint.x = mCurrentTouchPoint.x;
         mLastTouchPoint.y = mCurrentTouchPoint.y;
-        Log.d("TAG", "LAST " + mLastTouchPoint.x + " LAST " + mLastTouchPoint.y);
-        Log.d("TAG", "Current " + mCurrentTouchPoint.x + " Current " + mCurrentTouchPoint.y);
-
 
         mCurrentTouchPoint.x = event.getX();
         mCurrentTouchPoint.y = event.getY();
+        //要的是两次点之间的距离，然后去偏移
+        if (mLastTouchPoint.x != 0 && mLastTouchPoint.y != 0) {
+            //计算视角偏移,X,Y方向分开算。
+            //只要算坐标原点就可以了，用这两个点改变就可以平移
+            mCurrentViewPortX += mCurrentTouchPoint.x - mLastTouchPoint.x;
+            mCurrentViewPortY -= mCurrentTouchPoint.y - mLastTouchPoint.y;
+        }
+
 
         return true;
     }
 
     @Override
     public boolean handlePinchGesture(MotionEvent event) {
-        return false;
+        mOldDist = mNewDist;
+        mNewDist = spacing(event);
+        mZoom = mNewDist / mOldDist;
+
+        if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
+            midPoint(mMidPoint, event);
+            float xMiddle = mMidPoint.x - mCurrentViewPortX;
+            float yMiddle = Constant.mSurfaceViewHeight - mMidPoint.y - mCurrentViewPortY;
+
+            mCurrentViewPortX += (int) (xMiddle * mZoom);
+            mCurrentViewPortY += (int) (yMiddle *mZoom);
+            mCurrentViewPortWidth *= mZoom;
+            mCurrentViewPortHeight *= mZoom;
+        }
+
+        return true;
     }
 
+    /**
+     * 求pointID0和1之间的距离
+     */
+    private float spacing(MotionEvent event) {
+        float x = 0;
+        float y = 0;
+        try {
+            x = event.getX(0) - event.getX(1);
+            y = event.getY(0) - event.getY(1);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        return (float) Math.sqrt(x * x + y * y);
+    }
+
+    /**
+     * 求中点，用于缩放用
+     */
+    private void midPoint(PointF point, MotionEvent event) {
+        float x = event.getX(0) + event.getX(1);
+        float y = event.getY(0) + event.getY(1);
+        point.set(x / 2, y / 2);
+    }
+
+    //===================手势部分end========================
 
 }
