@@ -334,7 +334,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             midPoint(mMidPoint, event);
             float xIncrement = calculateXIncrement();
             float yIncrement = calculateYIncrement();
-            //        Log.d("TAG", "x    " + xIncrement + "   y   " + yIncrement);
 
 //            mCurrentViewPortX += (int) (mMidPoint.x - xMiddle * mZoom);
 //            mCurrentViewPortY += (int) (Constant.mSurfaceViewHeight - mMidPoint.y - yMiddle *
