@@ -30,7 +30,6 @@ public class MainActivity extends Activity {
     private boolean mGestureFlag = false;//是否出现手势操作判断
     private boolean mReTravel = true;
     private float mNewDist = 0.0f, mOldDist = 0.0f;
-    private ScaleGestureDetector mScaleGestureDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +55,10 @@ public class MainActivity extends Activity {
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
         mGestureHandleCallback = mRenderer;
 
-        mScaleGestureDetector = new ScaleGestureDetector(MainActivity.this,
-                mScaleGestureListener);
-
         mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                mScaleGestureDetector.onTouchEvent(event);
                 if (event != null) {
 
                     final int action = MotionEventCompat.getActionMasked(event);
@@ -82,25 +77,19 @@ public class MainActivity extends Activity {
                             break;
 
                         case MotionEvent.ACTION_POINTER_DOWN:
-                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_ZOOM;
                             mOldDist = spacing(event);
                             mGestureFlag = true;
-
                             break;
 
                         case MotionEvent.ACTION_MOVE:
                             if (mGestureFlag) {
+                                Constant.CURRENT_GESTURE_MODE = Constant
+                                        .GESTURE_MODE_DRAG;
                                 mNewDist = spacing(event);
-                                //根据两指操作的距离判断是什么是什么操作
-                                                 float distance = distance(mOldDist, mNewDist);
-                                //用两次距离判断操作
-                                                 if (distance < 10) {
-                                                     Constant.CURRENT_GESTURE_MODE = Constant
-                                 .GESTURE_MODE_DRAG;
-                                //                 } else {
-                                //                  Constant.CURRENT_GESTURE_MODE = Constant
-                                // .GESTURE_MODE_ZOOM;
-                                              }
+
+                                //根据两指操作的距离判断是放大还是缩小
+                                float distance = distance(mOldDist, mNewDist);
+
                             }
 
 
@@ -113,15 +102,18 @@ public class MainActivity extends Activity {
 
                                 edgeTest();
                                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
-                                Log.d("TAG", "moce  " +event.getX()+"  yyyy  "+ event.getY());
-                                mGLSurfaceView.requestRender();
+//                                mGLSurfaceView.requestRender();
+
+     //                           edgeTest();
+                                mReTravel = mGestureHandleCallback.handlePinchGesture(event);
+                               mGLSurfaceView.requestRender();
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_ZOOM) {
 
-//                                edgeTest();
-//                                mReTravel = mGestureHandleCallback.handlePinchGesture(event);
-//                                mGLSurfaceView.requestRender();
+//
+//
+//
 
                             }
 
@@ -269,7 +261,7 @@ public class MainActivity extends Activity {
      * 计算两次两指间距离，用来判断是什么操作
      */
     private float distance(float Old, float New) {
-        return Math.abs(Old - New);
+        return New - Old;
     }
 
 
@@ -286,39 +278,9 @@ public class MainActivity extends Activity {
     public interface GestureHandleCallback {
         boolean handleDragGesture(MotionEvent event);
 
-        boolean handlePinchGesture(int distance);
+        boolean handlePinchGesture(MotionEvent event);
     }
 
-    private final ScaleGestureDetector.OnScaleGestureListener mScaleGestureListener
-            = new ScaleGestureDetector.SimpleOnScaleGestureListener() {
-
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_ZOOM;
-            float spanX = getCurrentSpanX(detector);
-            float spanY = getCurrentSpanY(detector);
-            mGestureHandleCallback.handlePinchGesture((int) Math.sqrt(spanX * spanX + spanY *
-                    spanY));
-            Log.d("TAG", "DISTANCE  " +detector.getFocusX()+"  yyyy  "+ detector.getFocusY());
-            return true;
-        }
-    };
-
-    public static float getCurrentSpanX(ScaleGestureDetector scaleGestureDetector) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            return scaleGestureDetector.getCurrentSpanX();
-        } else {
-            return scaleGestureDetector.getCurrentSpan();
-        }
-    }
-
-    public static float getCurrentSpanY(ScaleGestureDetector scaleGestureDetector) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            return scaleGestureDetector.getCurrentSpanY();
-        } else {
-            return scaleGestureDetector.getCurrentSpan();
-        }
-    }
 
 //=====================手势部分end=========================
 }
