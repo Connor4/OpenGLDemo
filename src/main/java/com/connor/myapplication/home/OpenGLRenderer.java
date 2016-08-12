@@ -342,6 +342,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             float xIncrement = calculateXIncrement();
             float yIncrement = calculateYIncrement();
 
+
             mCurrentViewPortX += xIncrement;
             mCurrentViewPortY += yIncrement;
             mZoom = ((float) Math.round(mZoom * 100)) / 100;
