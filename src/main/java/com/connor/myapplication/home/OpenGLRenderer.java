@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
@@ -327,7 +326,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             mCurrentViewPortX += mCurrentTouchPoint.x - mLastTouchPoint.x;
             mCurrentViewPortY -= mCurrentTouchPoint.y - mLastTouchPoint.y;
         }
-        Log.d("TAG", "handleDragGesture    " + mCurrentViewPortX + "   y   " + mCurrentViewPortY);
         return true;
     }
 
@@ -342,10 +340,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             float xIncrement = calculateXIncrement();
             float yIncrement = calculateYIncrement();
 
-
-            mCurrentViewPortX += xIncrement;
-            mCurrentViewPortY += yIncrement;
-            mZoom = ((float) Math.round(mZoom * 100)) / 100;
+            mCurrentViewPortX += distributeXIncrement(xIncrement);
+            mCurrentViewPortY += distributeYIncrement(yIncrement);
+            mZoom = ((float) Math.round(mZoom * 100)) / 100;//保存精度
             mCurrentViewPortWidth *= mZoom;
             mCurrentViewPortHeight *= mZoom;
         }
@@ -391,21 +388,29 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     /**
-     * 分配算出的X增量，用于后面计算VIEWPORT的X
+     * 分配算出的X增量，用于后面计算VIEWPORT的X,
      * 返回int是因为便于之后计算是用整形
      * 用SurfaceView的宽去计算因为是按比例缩放的，所以用这个和用当前的width也一样
+     * 根据midPoint所在位置算出其左边以及下边应该分配的长度，用于设置X，Y
      */
-    private int distributeXIncrement(float XIncrement) {
-        return 0;
+    private float distributeXIncrement(float XIncrement) {
+        float result = 0;
+        float ratio = (mMidPoint.x - mCurrentViewPortX) / (mCurrentViewPortWidth * mZoom);
+        result = XIncrement * ratio;
+        return result;
     }
 
     /**
      * 分配算出的X增量，用于后面计算VIEWPORT的X
      * 返回int是因为便于之后计算是用整形
      * 用SurfaceView的高去计算因为是按比例缩放的，所以用这个和用当前的width也一样
+     * * 根据midPoint所在位置算出其左边以及下边应该分配的长度，用于设置X，Y
      */
-    private int distributeYIncrement(float YIncrement) {
-        return 0;
+    private float distributeYIncrement(float YIncrement) {
+        float result = 0;
+        float ratio = (mMidPoint.y - mCurrentViewPortY) / (mCurrentViewPortHeight * mZoom);
+        result = YIncrement * ratio;
+        return result;
     }
 
 
