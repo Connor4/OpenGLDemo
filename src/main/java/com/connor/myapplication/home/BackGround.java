@@ -24,7 +24,7 @@ public class BackGround {
         vertexArray = new VertexArray(vertices);
     }
 
-    public void bindData(TextureShaderProgram textureProgram) {
+    public void bindData(TraceTextureShaderProgram textureProgram) {
         vertexArray.setVertexAttribPointer(
                 0,
                 textureProgram.getPositionAttributeLocation(),

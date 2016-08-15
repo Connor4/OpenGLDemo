@@ -16,23 +16,7 @@ public class FBOBackGround {
     private static final int TEXTURE_COORDINATES_COMPONENT_COUNT = 2;
     private static final int STRIDE = (POSITION_COMPONENT_COUNT
             + TEXTURE_COORDINATES_COMPONENT_COUNT) * BYTES_PER_FLOAT;
-/*    private static final float[] VERTEX_DATA =
-            {
-                    // X, Y, S, T
-                    0f, 0f, 0.5f, 0.5f,
-                    -1.0f, -1.0f, 0.0f, 0.0f,
-                    1.0f, -1.0f, 1.0f, 0.0f,
-                    1.0f, 1.0f, 1.0f, 1.0f,
-                    -1.0f, 1.0f, 0.0f, 1.0f,
-                    -1.0f, -1.0f, 0.0f, 0.0f
 
-            };
-
-    private final VertexArray vertexArray;
-
-    public FBOBackGround() {
-        vertexArray = new VertexArray(VERTEX_DATA);
-    }*/
    private float[] vertices;
 
     private final VertexArray vertexArray;
