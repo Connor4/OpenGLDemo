@@ -1,10 +1,12 @@
 package com.connor.myapplication.home;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
@@ -14,6 +16,7 @@ import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
+import com.connor.myapplication.util.ObjectUtil;
 import com.connor.myapplication.util.RendererUtil;
 import com.connor.myapplication.util.SaveUtil;
 
@@ -59,11 +62,16 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     //=======手势部分start======
     private PointF mLastTouchPoint = new PointF();
     private PointF mCurrentTouchPoint = new PointF();
-    private PointF mMidPoint = new PointF();
+    private PointF mDragMidPoint = new PointF();
+    private PointF mLastDragMidPoint = new PointF();
+    private PointF mZoomMidPoint = new PointF();
     private float mNewDist = 0f, mOldDist = 0f;
     private float mZoom = 0f;
+    private float mTranslateX, mTranslateY, mScaleX, mScaleY;
+
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
+    private final float[] temp = new float[16];
     //=======手势部分end======
 
 
@@ -96,17 +104,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
 
-        Matrix.orthoM(projectionMatrix, 0, -1.57f, 1.57f, -1f, 1f,
+        Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1f, 1f,
                 -1f, 1f);
         Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 0f, 0f, 0f);
-
-        Matrix.scaleM(modelMatrix, 0, 1f, 1f, 1f);
-
-        final float[] temp = new float[16];
-        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
-
     }
 
 
@@ -114,16 +114,20 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public void onDrawFrame(GL10 gl) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        Matrix.setIdentityM(modelMatrix, 0);
-        Matrix.translateM(modelMatrix, 0, 1f, 0f, 0);
-        Matrix.rotateM(modelMatrix, 0, -60f, 1f, 0f, 0f);
 
-        final float[] temp = new float[16];
-        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
-        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
 
-        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG || Constant
-                .CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_ZOOM) {
+        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
+            Matrix.translateM(modelMatrix, 0, mTranslateX , mTranslateY, 0);
+//            for (int i = 0; i<16;i++) {
+//                Log.d("TAG", "" + modelMatrix[i]);
+//            }
+
+            //         Matrix.scaleM(modelMatrix, 0, 0.5f, 0.5f, 0.5f);
+            Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+            System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
+
+            mTranslateX = 0;
+            mTranslateY = 0;
 
             drawOnscreen();
         } else {
@@ -148,7 +152,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
                 drawInFrameBuffer(mFramebuffer);
                 //因为在FBO画的时候改变了视角，需要重新改变视角
-                glViewport(0,0,Constant.mSurfaceViewWidth,Constant.mSurfaceViewHeight);
+                glViewport(0, 0, Constant.mSurfaceViewWidth, Constant.mSurfaceViewHeight);
                 drawOnscreen();
             }
         }
@@ -320,19 +324,27 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     //===================手势部分start========================
 
     /**
-     * 当前的坐标减去上次的坐标就是偏移量
+     *
      */
     @Override
     public boolean handleDragGesture(MotionEvent event) {
-        mLastTouchPoint.x = mCurrentTouchPoint.x;
-        mLastTouchPoint.y = mCurrentTouchPoint.y;
+        mLastDragMidPoint.x = mDragMidPoint.x;
+        mLastDragMidPoint.y = mDragMidPoint.y;
+        midPoint(mDragMidPoint, event);
 
-        mCurrentTouchPoint.x = event.getX();
-        mCurrentTouchPoint.y = event.getY();
-        //要的是两次点之间的距离，然后去偏移
-        if (mLastTouchPoint.x != 0 && mLastTouchPoint.y != 0) {
-            //计算视角偏移,X,Y方向分开算。
-            //只要算坐标原点就可以了，用这两个点改变就可以平移
+        if (mLastDragMidPoint.x != 0 && mLastDragMidPoint.y != 0) {
+
+            if (mDragMidPoint.x > mLastDragMidPoint.x) {//由左向右滑动
+                mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x);
+            } else if (mDragMidPoint.x < mLastDragMidPoint.x) {//由右向左滑动
+                mTranslateX = -Xdistance(mDragMidPoint.x, mLastDragMidPoint.x);
+            }
+
+//            if (mDragMidPoint.y > mLastDragMidPoint.y) {//由下向上滑动
+//                mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y);
+//            } else if (mDragMidPoint.y < mLastDragMidPoint.y) {//由上向下滑动
+//                mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y);
+//            }
         }
         return true;
     }
@@ -344,7 +356,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mZoom = mNewDist / mOldDist;
 
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
-            midPoint(mMidPoint, event);
+            midPoint(mZoomMidPoint, event);
         }
         return true;
     }
@@ -373,6 +385,17 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         point.set(x / 2, y / 2);
     }
 
+    private float Xdistance(float p1, float p2) {
+        float glX1 = (p1 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
+        float glX2 = (p2 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
+        return Math.abs((glX2 - glX1)/10);
+    }
+
+    private float Ydistance(float p1, float p2) {
+        float glY1 = 1 - (p1 / (float) Constant.mSurfaceViewHeight) * 2;
+        float glY2 = 1 - (p2 / (float) Constant.mSurfaceViewHeight) * 2;
+        return Math.abs((glY2 - glY1)/100);
+    }
 
 
     //===================手势部分end========================
