@@ -395,7 +395,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      */
     private float distributeXIncrement(float XIncrement) {
         float result = 0;
-        float ratio = (mMidPoint.x - mCurrentViewPortX) / (mCurrentViewPortWidth * mZoom);
+        float ratio = (mMidPoint.x - mCurrentViewPortX) / (mCurrentViewPortWidth*mZoom);
         result = XIncrement * ratio;
         return result;
     }
@@ -408,7 +408,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      */
     private float distributeYIncrement(float YIncrement) {
         float result = 0;
-        float ratio = (mMidPoint.y - mCurrentViewPortY) / (mCurrentViewPortHeight * mZoom);
+//        float ratio = (mMidPoint.y - mCurrentViewPortY) / (mCurrentViewPortHeight );
+        float ratio = ((Constant.mSurfaceViewHeight - mCurrentViewPortY) - mMidPoint.y) /
+                (mCurrentViewPortHeight*mZoom);
         result = YIncrement * ratio;
         return result;
     }

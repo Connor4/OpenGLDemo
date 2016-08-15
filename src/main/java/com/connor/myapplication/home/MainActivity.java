@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -29,7 +26,6 @@ public class MainActivity extends Activity {
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
     private boolean mReTravel = true;
-    private float mNewDist = 0.0f, mOldDist = 0.0f;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +73,6 @@ public class MainActivity extends Activity {
                             break;
 
                         case MotionEvent.ACTION_POINTER_DOWN:
-                            mOldDist = spacing(event);
                             mGestureFlag = true;
                             break;
 
@@ -85,10 +80,6 @@ public class MainActivity extends Activity {
                             if (mGestureFlag) {
                                 Constant.CURRENT_GESTURE_MODE = Constant
                                         .GESTURE_MODE_DRAG;
-                                mNewDist = spacing(event);
-
-                                //根据两指操作的距离判断是放大还是缩小
-                                float distance = distance(mOldDist, mNewDist);
 
                             }
 
@@ -104,9 +95,9 @@ public class MainActivity extends Activity {
                                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
 //                                mGLSurfaceView.requestRender();
 
-     //                           edgeTest();
+                                //                           edgeTest();
                                 mReTravel = mGestureHandleCallback.handlePinchGesture(event);
-                               mGLSurfaceView.requestRender();
+                                mGLSurfaceView.requestRender();
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_ZOOM) {
@@ -117,7 +108,6 @@ public class MainActivity extends Activity {
 
                             }
 
-                            mOldDist = mNewDist;//新的赋值给旧的，给下一个移动计算
 
                             break;
 
@@ -148,7 +138,6 @@ public class MainActivity extends Activity {
                         case MotionEvent.ACTION_POINTER_UP:
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             mGestureFlag = false;
-                            mOldDist = 0;
                             break;
 
                         default:
