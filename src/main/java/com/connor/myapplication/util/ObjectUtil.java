@@ -46,7 +46,7 @@ public class ObjectUtil {
                 break;
 
             case Constant.ERASER:
-                CreateAndAddOppositeEraser(glOppositeX, glOppositeY);
+                CreateAndAddOppositePoint(glOppositeX, glOppositeY);
                 break;
 
             default:
@@ -55,24 +55,16 @@ public class ObjectUtil {
         mView.requestRender();
     }
 
-
     /**
      * 生成点对象并加入容器中
      *
      * @param x opengl坐标
      * @param y opengl坐标
      */
-    private static void CreateAndAddOppositeEraser(float x, float y) {
-        FBOPoints points = new FBOPoints(new PointBean(x, y));
-        mRenderer.addOppositeMesh(points);
-    }
-
-
     private static void CreateAndAddOppositeEffect(float x, float y) {
         FBOEffectPoints points = new FBOEffectPoints(new PointBean(x, y));
         mRenderer.addOppositeMesh(points);
     }
-
 
     /**
      * 生成点对象并加入容器中
@@ -124,7 +116,7 @@ public class ObjectUtil {
                         CreateAndAddOppositeEffect(p.getX(), p.getY());
                         break;
                     case Constant.ERASER:
-                        CreateAndAddOppositeEraser(p.getX(), p.getY());
+                        CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     default:
                         break;

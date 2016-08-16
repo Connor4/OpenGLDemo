@@ -14,6 +14,7 @@ import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
+import com.connor.myapplication.util.PictureUtil;
 import com.connor.myapplication.util.RendererUtil;
 import com.connor.myapplication.util.SaveUtil;
 
@@ -57,14 +58,12 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public boolean mDrawNext;
     public boolean mSavePic;
     //=======手势部分start======
-    private PointF mLastTouchPoint = new PointF();
-    private PointF mCurrentTouchPoint = new PointF();
     private PointF mDragMidPoint = new PointF();
     private PointF mLastDragMidPoint = new PointF();
     private PointF mZoomMidPoint = new PointF();
     private float mNewDist = 0f, mOldDist = 0f;
     private float mZoom = 0f;
-    private float mTranslateX, mTranslateY, mScaleX, mScaleY;
+    private float mTranslateX = 0, mTranslateY = 0, mScaleX = 1, mScaleY = 1;
 
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
@@ -100,9 +99,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
-
         Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1f, 1f, -1f, 1f);
-        Matrix.setIdentityM(modelMatrix, 0);
     }
 
 
@@ -110,11 +107,10 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public void onDrawFrame(GL10 gl) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
-
+        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
             Matrix.setIdentityM(modelMatrix, 0);
             Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
-            //       Matrix.scaleM(modelMatrix, 0, 0.5f, 0.5f, 0.5f);
+            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
 
@@ -193,8 +189,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
                 mRoot.draw(RendererUtil.CreateChangeProgram(mContext),
                         mCurrentOtherTextureIndex[0]);
 
-                glDeleteProgram(Constant.CURRENT_OTHER_PROGRAM_INDEX);
-                glDeleteTextures(1, mCurrentOtherTextureIndex, 0);
+                glDeleteProgram(Constant.CURRENT_OTHER_PROGRAM_INDEX);//删除program
+                glDeleteTextures(1, mCurrentOtherTextureIndex, 0);//删除纹理
 
                 glDisable(GL_BLEND);
                 break;
@@ -274,18 +270,21 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     /**
-     * 释放记录缩放平移位置的PointF
+     * 释放记录缩放平移位置的数据
      */
-    public void freeGesturePointF() {
-        //=======平移========
-        mCurrentTouchPoint.x = 0;
-        mCurrentTouchPoint.y = 0;
-        mLastTouchPoint.x = 0;
-        mLastTouchPoint.y = 0;
+    public void freeGestureStatu() {
         //=======缩放======
         mZoom = 0;
         mNewDist = 0;
         mOldDist = 0;
+        mScaleX = mScaleY = 1;
+        //=======平移========
+        mDragMidPoint.x = mDragMidPoint.y = 0;
+        mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
+        PictureUtil.projectionMatrix = projectionMatrix;
+//        for (int i=0; i < 16;i++) {
+//            Log.d("TAG", " " + projectionMatrix[i]);
+//        }
     }
 
 
@@ -313,7 +312,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     //===================手势部分start========================
 
     /**
-     *
+     * 用两指的中点计算偏移量
      */
     @Override
     public boolean handleDragGesture(MotionEvent event) {
@@ -322,8 +321,11 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         midPoint(mDragMidPoint, event);
 
         if (mLastDragMidPoint.x != 0 && mLastDragMidPoint.y != 0) {
-            mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x);
-            mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y);
+            //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
+            //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价
+            //的距离就可以了
+            mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x) / projectionMatrix[0];
+            mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y) / projectionMatrix[5];
         }
         return true;
     }
@@ -336,6 +338,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mZoomMidPoint, event);
+            mScaleX = mScaleY = mZoom;
         }
         return true;
     }
@@ -364,12 +367,18 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         point.set(x / 2, y / 2);
     }
 
+    /**
+     * 世界坐标换算成OpenGL坐标再计算距离
+     */
     private float Xdistance(float p1, float p2) {
         float glX1 = (p1 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
         float glX2 = (p2 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
         return glX1 - glX2;
     }
 
+    /**
+     * 世界坐标换算成OpenGL坐标再计算距离
+     */
     private float Ydistance(float p1, float p2) {
         float glY1 = 1 - (p1 / (float) Constant.mSurfaceViewHeight) * 2;
         float glY2 = 1 - (p2 / (float) Constant.mSurfaceViewHeight) * 2;

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -65,7 +66,6 @@ public class MainActivity extends Activity {
                     switch (action & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_DOWN:
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
-
                             ObjectUtil.setPointCoordinate(currentX, currentY);
                             //添加点，用于贝塞尔曲线
                             BezierUtil.addScreenPoint(currentX, currentY);
@@ -78,30 +78,22 @@ public class MainActivity extends Activity {
 
                         case MotionEvent.ACTION_MOVE:
                             if (mGestureFlag) {
-                                Constant.CURRENT_GESTURE_MODE = Constant
-                                        .GESTURE_MODE_DRAG;
-
+                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAGANDZOOM;
                             }
-
 
                             if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_NORMAL) {
                                 //点下来了继续滑动就画线
                                 BezierUtil.addScreenPoint(currentX, currentY);
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
-                                    .GESTURE_MODE_DRAG) {
+                                    .GESTURE_MODE_DRAGANDZOOM) {
 
                                 edgeTest();
                                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
                                 mReTravel = mGestureHandleCallback.handlePinchGesture(event);
                                 mGLSurfaceView.requestRender();
 
-                            } else if (Constant.CURRENT_GESTURE_MODE == Constant
-                                    .GESTURE_MODE_ZOOM) {
-
                             }
-
-
                             break;
 
                         case MotionEvent.ACTION_UP:
@@ -113,15 +105,15 @@ public class MainActivity extends Activity {
                                         mRenderer.drawInBackupFBO();
                                     }
                                 });
-                            } else if (Constant.CURRENT_GESTURE_MODE == Constant
-                                    .GESTURE_MODE_GONE) {
-                                mGLSurfaceView.queueEvent(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mRenderer.freeGesturePointF();
-                                    }
-                                });
                             }
+
+                            mGLSurfaceView.queueEvent(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mRenderer.freeGestureStatu();
+                                }
+                            });
+
 
                             BezierUtil.releasePoints();
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
@@ -129,8 +121,17 @@ public class MainActivity extends Activity {
                             break;
 
                         case MotionEvent.ACTION_POINTER_UP:
+
+                            mGLSurfaceView.queueEvent(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mRenderer.freeGestureStatu();
+                                }
+                            });
+
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             mGestureFlag = false;
+
                             break;
 
                         default:
@@ -143,6 +144,11 @@ public class MainActivity extends Activity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        calculateSurfaceSize();
+    }
 
     public void FireWorks(View view) {
         Constant.CURRENT_USE_TYPE = Constant.FIREWORKS;
@@ -222,30 +228,34 @@ public class MainActivity extends Activity {
         }
         return false;
     }
-//=====================手势部分start===========================
+
+    private void calculateSurfaceSize() {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        Constant.ScreenWidth = dm.widthPixels;
+        Constant.ScreenHeight = dm.heightPixels;
+        Constant.mSurfaceViewWidth = dm.widthPixels;
+        Constant.mSurfaceViewHeight = (int) ((dm.heightPixels - getStatusHeight()) * 0.9f);
+    }
 
     /**
-     * 求pointID0和1之间的距离
+     * 获取通知栏高度
      */
-    private float spacing(MotionEvent event) {
-        float x = 0;
-        float y = 0;
+    private int getStatusHeight() {
+        int statusHeight = -1;
         try {
-            x = event.getX(0) - event.getX(1);
-            y = event.getY(0) - event.getY(1);
-        } catch (IllegalArgumentException e) {
+            Class<?> clazz = Class.forName("com.android.internal.R$dimen");
+            Object object = clazz.newInstance();
+            int height = Integer.parseInt(clazz.getField("status_bar_height")
+                    .get(object).toString());
+            statusHeight = getResources().getDimensionPixelSize(height);
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        return (float) Math.sqrt(x * x + y * y);
+        return statusHeight;
     }
 
-    /**
-     * 计算两次两指间距离，用来判断是什么操作
-     */
-    private float distance(float Old, float New) {
-        return New - Old;
-    }
 
+//=====================手势部分start===========================
 
     /**
      * 边界测试，超过边界就逐渐变回最开始的位置

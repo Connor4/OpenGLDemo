@@ -2,7 +2,6 @@ package com.connor.myapplication.util;
 
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
-import com.connor.myapplication.program.TextureHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,11 +143,11 @@ public class BezierUtil {
     private static ArrayList<PointBean> splicePoints(ArrayList<PointBean> list) {
         ArrayList<PointBean> result = new ArrayList<>();
         float distance;
-        PointBean first=list.get(0);
+        PointBean first = list.get(0);
         PointBean second = list.get(1);
         result.add(first);
 
-        for (int i = 1; i < list.size()-1; i++) {
+        for (int i = 1; i < list.size() - 1; i++) {
             distance = calculateExactDistance(first, second);
             if (distance > 10.0f) {
                 first = second;
@@ -211,6 +210,7 @@ public class BezierUtil {
 
     /**
      * 也是计算两点间距离，但是这个是结果准确的
+     *
      * @param start
      * @param end
      * @return
@@ -218,8 +218,7 @@ public class BezierUtil {
     private static float calculateExactDistance(PointBean start, PointBean end) {
         float x = Math.abs(start.getX() - end.getX());
         float y = Math.abs(start.getY() - end.getY());
-        float distance = (float)Math.sqrt((x * x + y * y));
-        return distance;
+        return (float) Math.sqrt((x * x + y * y));
     }
 
 
