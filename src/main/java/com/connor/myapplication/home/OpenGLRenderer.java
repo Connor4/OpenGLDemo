@@ -344,7 +344,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mZoomMidPoint, event);
             mScaleX = mScaleY = mZoom;
-            //这里还添加一个平移的变化，因为缩放过程中也需要通过平移
+            //缩放过程还有一个平移的变化，目的是做随手指位置缩放
             mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
                     projectionMatrix[0];
             mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
