@@ -51,9 +51,9 @@ public class TextureHelper {
         Bitmap bitmapTmp = BitmapFactory.decodeResource(
                 context.getResources(), resourceId, options);
 
-        Bitmap bitmap = getResizedBitmap(bitmapTmp, Constant.ScreenWidth, Constant.ScreenHeight );
+//        Bitmap bitmap = getResizedBitmap(bitmapTmp, Constant.ScreenWidth, Constant.ScreenHeight );
 
-        if (bitmap == null) {
+        if (bitmapTmp == null) {
 
             glDeleteTextures(1, textureObjectIds, 0);
             return 0;
@@ -62,10 +62,10 @@ public class TextureHelper {
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        texImage2D(GL_TEXTURE_2D, 0, bitmap, 0);
+        texImage2D(GL_TEXTURE_2D, 0, bitmapTmp, 0);
 
         glGenerateMipmap(GL_TEXTURE_2D);
-        bitmap.recycle();
+        bitmapTmp.recycle();
 
         glBindTexture(GL_TEXTURE_2D, 0);
 

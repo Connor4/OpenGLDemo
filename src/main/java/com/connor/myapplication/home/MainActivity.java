@@ -114,7 +114,6 @@ public class MainActivity extends Activity {
                                 }
                             });
 
-
                             BezierUtil.releasePoints();
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
 
@@ -265,7 +264,6 @@ public class MainActivity extends Activity {
     }
 
     private GestureHandleCallback mGestureHandleCallback;
-
 
     public interface GestureHandleCallback {
         boolean handleDragGesture(MotionEvent event);

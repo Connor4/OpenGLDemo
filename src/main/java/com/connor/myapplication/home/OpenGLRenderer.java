@@ -102,10 +102,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
         Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1f, 1f, -1f, 1f);
-//        Matrix.setIdentityM(modelMatrix, 0);
-//        Matrix.scaleM(modelMatrix, 0, 2, 2, 0);
-//        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
-//        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 
 
@@ -115,7 +111,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
             Matrix.setIdentityM(modelMatrix, 0);
-           Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
+            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
             Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
@@ -250,7 +246,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     private void initProgram() {
         mTextureProgram = new TextureShaderProgram(mContext, R.raw.texture_fragment_shader);
         mPointProgram = new TextureShaderProgram(mContext, R.raw.point_texture_fragment_shader);
-
         mTraceProgram = new TraceTextureShaderProgram(mContext, R.raw.trace_texture_shader_program);
 
     }
@@ -291,9 +286,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
         //传递投影矩阵给这个工具类计算偏移量
         PictureUtil.projectionMatrix = projectionMatrix;
-//        for (int i=0; i < 16;i++) {
-//            Log.d("TAG", " " + projectionMatrix[i]);
-//        }
     }
 
 

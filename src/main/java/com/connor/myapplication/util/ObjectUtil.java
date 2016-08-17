@@ -143,15 +143,17 @@ public class ObjectUtil {
     }
 
     /**
-     * 好像是根据可画的区域去计算OpenGL坐标
+     * 主要是因为在横屏状态下，在空白区域的点击不能画，需要将屏幕坐标换算成
+     * OpenGL坐标，除以Constant.AreaWidth，在区域面外的会大于1，即，画在FBO上也是不在图片内的。
      */
     private static float CalculateOppositeCoordinateX(float x) {
-        float result = x / Constant.AreaWidth;
+       float result = x / Constant.AreaWidth;
         return result;
     }
 
     /**
-     * 好像是根据可画的区域去计算OpenGL坐标
+     * 主要是因为在横屏状态下，在空白区域的点击不能画，需要将屏幕坐标换算成
+     * OpenGL坐标，除以Constant.AreaWidth，在区域面外的会大于1，即，画在FBO上也是不在图片内的。
      */
     private static float CalculateOppositeCoordinateY(float y) {
         float result = y / Constant.AreaHeight;
