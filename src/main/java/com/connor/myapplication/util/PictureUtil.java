@@ -12,11 +12,15 @@ import java.util.Random;
  * Created by meitu on 2016/7/15.
  */
 public class PictureUtil {
+    //显示纹理大小间隔,4个
     public static float mStrideX;
     public static float mStrideY;
     public static float mFBOStrideX;
     public static float mFBOStrideY;
-    public static float mOffset;
+    //偏移量
+    public static float mXOffset;
+    public static float mYOffset;
+    //投影矩阵，用于计算偏移量
     public static float[] projectionMatrix = new float[16];
 
     /**
@@ -109,19 +113,20 @@ public class PictureUtil {
             strideY *= 2;
         }
 
+        calculateOffset(p);
 
         float[] vertices = new float[]
                 {       //X,Y,S,T
-                        p.getX(), p.getY(), 0.5f, 0.5f,//XY,ST
-                        p.getX() - strideX, p.getY() - strideY, //XY
+                        mXOffset, mYOffset, 0.5f, 0.5f,//XY,ST
+                        mXOffset - strideX, mYOffset - strideY, //XY
                         0.0f, 1.0f,//ST
-                        p.getX() + strideX, p.getY() - strideY, //XY
+                        mXOffset + strideX, mYOffset - strideY, //XY
                         1.0f, 1.0f,//ST
-                        p.getX() + strideX, p.getY() + strideY, //XY
+                        mXOffset + strideX, mYOffset + strideY, //XY
                         1.0f, 0.0f,//ST
-                        p.getX() - strideX, p.getY() + strideY, //XY
+                        mXOffset - strideX, mYOffset + strideY, //XY
                         0.0f, 0.0f,//ST
-                        p.getX() - strideX, p.getY() - strideY, //XY
+                        mXOffset - strideX, mYOffset - strideY, //XY
                         0.0f, 1.0f,//ST
                 };
         return vertices;
@@ -137,20 +142,25 @@ public class PictureUtil {
     public static float[] calculateOppositeEffectArea(PointBean p) {
         float strideX = mFBOStrideX;
         float strideY = mFBOStrideY;
+        calculateOffset(p);
         float[] vertices = new float[]
                 {
-                        p.getX(), p.getY(),//XY
-                        (p.getX() + 1) / 2, (p.getY() - 1) / 2, 0.5f, 0.5f,//ST,ST
-                        p.getX() - strideX, p.getY() - strideY, //XY
-                        (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f,//ST,ST
-                        p.getX() + strideX, p.getY() - strideY, //XY
-                        (p.getX() + strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 1.0f, 0.0f,//ST,ST
-                        p.getX() + strideX, p.getY() + strideY, //XY
-                        (p.getX() + strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 1.0f, 1.0f,//ST,ST
-                        p.getX() - strideX, p.getY() + strideY, //XY
-                        (p.getX() - strideX + 1) / 2, ((p.getY() + strideY) - 1) / 2, 0.0f, 1.0f,//ST,ST
-                        p.getX() - strideX, p.getY() - strideY, //XY
-                        (p.getX() - strideX + 1) / 2, ((p.getY() - strideY) - 1) / 2, 0.0f, 0.0f//ST,ST
+                        mXOffset, mYOffset,//XY
+                        (mXOffset + 1) / 2, (mYOffset - 1) / 2, 0.5f, 0.5f,//ST,ST
+                        mXOffset - strideX, mYOffset - strideY, //XY
+                        (mXOffset - strideX + 1) / 2, ((mYOffset - strideY) - 1) / 2, 0.0f, 0.0f,
+                        //ST,ST
+                        mXOffset + strideX, mYOffset - strideY, //XY
+                        (mXOffset + strideX + 1) / 2, ((mYOffset - strideY) - 1) / 2, 1.0f, 0.0f,
+                        //ST,ST
+                        mXOffset + strideX, mYOffset + strideY, //XY
+                        (mXOffset + strideX + 1) / 2, ((mYOffset + strideY) - 1) / 2, 1.0f, 1.0f,
+                        //ST,ST
+                        mXOffset - strideX, mYOffset + strideY, //XY
+                        (mXOffset - strideX + 1) / 2, ((mYOffset + strideY) - 1) / 2, 0.0f, 1.0f,
+                        //ST,ST
+                        mXOffset - strideX, mYOffset - strideY, //XY
+                        (mXOffset - strideX + 1) / 2, ((mYOffset - strideY) - 1) / 2, 0.0f, 0.0f//ST,ST
                 };
         return vertices;
     }
@@ -203,11 +213,26 @@ public class PictureUtil {
     /**
      * 修改缩放平移后偏移量
      * 对于投影矩阵，0,5位是X,Y方向上缩放量,12,13位是X，Y方向上平移量
-     * 只对放大了的做计算，缩小的不能画
+     * 做这个的思路：画一个（-1,1）的，再画一个（-2,2）的，两个都是原点作为中心。
+     * 缩放的就取屏幕上的坐标（-0.5，-0.5），（-2,2）即放大的会显示在哪里（就是（-1,1）等比例的位置），
+     * 如果要显示在点击位置（缩放的应该在（（-0.25，-0.25））），应该坐标怎么变换
+     * 公式为：点击位置/ratio = 应该在的位置/1（即屏幕XY最大值）
+     * 平移的，单独拿出来的话，就是x-offset，y+offset。
+     * 但是平移和缩放的一起来，就必须选计算平移的，再处理缩放的。
      */
-    private void getOffset() {
-        float ratio = projectionMatrix[0];
-
+    private static void calculateOffset(PointBean p) {
+        float ratio = projectionMatrix[0];//缩放倍数
+        float Xoffset = projectionMatrix[12];//X轴偏移量
+        float Yoffset = projectionMatrix[13];//Y轴偏移量
+        float x = p.getX();
+        float y = p.getY();
+        if (ratio != 0) {
+            mXOffset = (x - Xoffset) / ratio;
+            mYOffset = (y + Yoffset) / ratio;
+        } else {
+            mXOffset = x;
+            mYOffset = y;
+        }
     }
 
 }

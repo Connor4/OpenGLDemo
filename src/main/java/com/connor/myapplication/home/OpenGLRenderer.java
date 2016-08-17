@@ -60,6 +60,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     //=======手势部分start======
     private PointF mDragMidPoint = new PointF();
     private PointF mLastDragMidPoint = new PointF();
+    private PointF mZoomDragMidPoint = new PointF();
+    private PointF mZoomLastDragMidPoint = new PointF();
     private PointF mZoomMidPoint = new PointF();
     private float mNewDist = 0f, mOldDist = 0f;
     private float mZoom = 0f;
@@ -100,6 +102,10 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         glViewport(0, 0, width, height);
         Matrix.orthoM(projectionMatrix, 0, -1f, 1f, -1f, 1f, -1f, 1f);
+//        Matrix.setIdentityM(modelMatrix, 0);
+//        Matrix.scaleM(modelMatrix, 0, 2, 2, 0);
+//        Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
+//        System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
     }
 
 
@@ -109,7 +115,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
             Matrix.setIdentityM(modelMatrix, 0);
-            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
+           Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
             Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
@@ -278,9 +284,12 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mNewDist = 0;
         mOldDist = 0;
         mScaleX = mScaleY = 1;
+        mZoomDragMidPoint.x = mZoomLastDragMidPoint.x = 0;
+        mZoomDragMidPoint.y = mZoomLastDragMidPoint.y = 0;
         //=======平移========
         mDragMidPoint.x = mDragMidPoint.y = 0;
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
+        //传递投影矩阵给这个工具类计算偏移量
         PictureUtil.projectionMatrix = projectionMatrix;
 //        for (int i=0; i < 16;i++) {
 //            Log.d("TAG", " " + projectionMatrix[i]);
@@ -336,9 +345,18 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mNewDist = spacing(event);
         mZoom = mNewDist / mOldDist;
 
+        mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
+        mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
+        midPoint(mZoomDragMidPoint, event);
+
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mZoomMidPoint, event);
             mScaleX = mScaleY = mZoom;
+            //这里还添加一个平移的变化，因为缩放过程中也需要通过平移
+            mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
+                    projectionMatrix[0];
+            mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
+                    projectionMatrix[5];
         }
         return true;
     }
