@@ -13,6 +13,9 @@ import java.util.Random;
  */
 public class RendererUtil {
 
+    /**
+     * 随机选择星星图案，生成纹理
+     */
     public static int CreateChangeTexture(Context mContext) {
         int mOtherTexture = 0;//选择0是错误的，0代表其他纹理
         Random random = new Random();
@@ -43,7 +46,7 @@ public class RendererUtil {
     }
 
     /**
-     * 目的是采用不同的脚本
+     *随机选择一种脚本生成program
      */
     public static OtherTextureShaderProgram CreateChangeProgram(Context mContext) {
         OtherTextureShaderProgram mOtherProgram = null;
@@ -66,7 +69,7 @@ public class RendererUtil {
         }
         return mOtherProgram;
     }
-    //===========================================================
+    //==========================分割=================================
 
     public static int[] mFireWorkTexture = new int[6];
 
@@ -88,8 +91,6 @@ public class RendererUtil {
 
     /**
      * 选择烟花笔的纹理
-     *
-     * @return
      */
     public static int SelectFireWorkTexture() {
         Random random = new Random();
@@ -115,9 +116,6 @@ public class RendererUtil {
 
     /**
      * 创建给firework用的program
-     *
-     * @param mContext
-     * @return
      */
     public static OtherTextureShaderProgram CreateFireWorkProgram(Context mContext) {
         OtherTextureShaderProgram mOtherProgram = new OtherTextureShaderProgram(mContext,

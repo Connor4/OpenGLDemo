@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
@@ -110,6 +111,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
+
             Matrix.setIdentityM(modelMatrix, 0);
             Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
             Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
@@ -273,7 +275,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     /**
      * 释放记录缩放平移位置的数据
      */
-    public void freeGestureStatu() {
+    public void freeGestureStatus() {
         //=======缩放======
         mZoom = 0;
         mNewDist = 0;
@@ -281,6 +283,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mScaleX = mScaleY = 1;
         mZoomDragMidPoint.x = mZoomLastDragMidPoint.x = 0;
         mZoomDragMidPoint.y = mZoomLastDragMidPoint.y = 0;
+        mZoomMidPoint.x = mZoomMidPoint.y = 0;
         //=======平移========
         mDragMidPoint.x = mDragMidPoint.y = 0;
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
@@ -327,6 +330,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             //的距离就可以了
             mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x) / projectionMatrix[0];
             mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y) / projectionMatrix[5];
+
         }
         return true;
     }
@@ -337,18 +341,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mNewDist = spacing(event);
         mZoom = mNewDist / mOldDist;
 
-        mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
-        mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
-        midPoint(mZoomDragMidPoint, event);
-
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mZoomMidPoint, event);
             mScaleX = mScaleY = mZoom;
-            //缩放过程还有一个平移的变化，目的是做随手指位置缩放
-            mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
-                    projectionMatrix[0];
-            mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
-                    projectionMatrix[5];
+//            Log.d("TAG", "X  " + mZoomMidPoint.x * (1 - mZoom) + "  Y  " + mZoomMidPoint.y * (1 -
+//                    mZoom));
+            mTranslateX = XOffset(mZoomMidPoint.x * (1 - mZoom)) / projectionMatrix[0];
+            mTranslateY = YOffset(mZoomMidPoint.y * (1 - mZoom)) / projectionMatrix[5];
+            Log.d("TAG", "X  " + mTranslateX + "  Y  " + mTranslateY);
         }
         return true;
     }
@@ -378,7 +378,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     /**
-     * 世界坐标换算成OpenGL坐标再计算距离
+     * 世界坐标换算成OpenGL坐标再计算距离,平移用的
      */
     private float Xdistance(float p1, float p2) {
         float glX1 = (p1 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
@@ -387,7 +387,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     /**
-     * 世界坐标换算成OpenGL坐标再计算距离
+     * 世界坐标换算成OpenGL坐标再计算距离，平移用的
      */
     private float Ydistance(float p1, float p2) {
         float glY1 = 1 - (p1 / (float) Constant.mSurfaceViewHeight) * 2;
@@ -395,6 +395,27 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         return glY1 - glY2;
     }
 
+    /**
+     * 这个同样是计算距离，但是不同上面那个，上面那个是点来计算距离，
+     * 所以要换算一下再减，这个直接就是换算成OpenGL坐标就可以了
+     *
+     * @param dis 世界坐标下的距离
+     * @return
+     */
+    private float XOffset(float dis) {
+        return dis / Constant.mSurfaceViewWidth * 2;
+    }
+
+    /**
+     * 这个同样是计算距离，但是不同上面那个，上面那个是点来计算距离，
+     * 所以要换算一下再减，这个直接就是换算成OpenGL坐标就可以了
+     *
+     * @param dis 世界坐标下的距离
+     * @return
+     */
+    private float YOffset(float dis) {
+        return dis / Constant.mSurfaceViewHeight *2;
+    }
 
     //===================手势部分end========================
 

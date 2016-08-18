@@ -110,7 +110,7 @@ public class MainActivity extends Activity {
                             mGLSurfaceView.queueEvent(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mRenderer.freeGestureStatu();
+                                    mRenderer.freeGestureStatus();
                                 }
                             });
 
@@ -124,7 +124,7 @@ public class MainActivity extends Activity {
                             mGLSurfaceView.queueEvent(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mRenderer.freeGestureStatu();
+                                    mRenderer.freeGestureStatus();
                                 }
                             });
 
