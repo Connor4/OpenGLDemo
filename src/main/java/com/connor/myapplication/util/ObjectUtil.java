@@ -46,7 +46,7 @@ public class ObjectUtil {
                 break;
 
             case Constant.ERASER:
-                CreateAndAddOppositeEraser(glOppositeX, glOppositeY);
+                CreateAndAddOppositePoint(glOppositeX, glOppositeY);
                 break;
 
             default:
@@ -55,24 +55,16 @@ public class ObjectUtil {
         mView.requestRender();
     }
 
-
     /**
      * 生成点对象并加入容器中
      *
      * @param x opengl坐标
      * @param y opengl坐标
      */
-    private static void CreateAndAddOppositeEraser(float x, float y) {
-        FBOPoints points = new FBOPoints(new PointBean(x, y));
-        mRenderer.addOppositeMesh(points);
-    }
-
-
     private static void CreateAndAddOppositeEffect(float x, float y) {
         FBOEffectPoints points = new FBOEffectPoints(new PointBean(x, y));
         mRenderer.addOppositeMesh(points);
     }
-
 
     /**
      * 生成点对象并加入容器中
@@ -124,7 +116,7 @@ public class ObjectUtil {
                         CreateAndAddOppositeEffect(p.getX(), p.getY());
                         break;
                     case Constant.ERASER:
-                        CreateAndAddOppositeEraser(p.getX(), p.getY());
+                        CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     default:
                         break;
@@ -151,15 +143,17 @@ public class ObjectUtil {
     }
 
     /**
-     * 好像是根据可画的区域去计算OpenGL坐标
+     * 主要是因为在横屏状态下，在空白区域的点击不能画，需要将屏幕坐标换算成
+     * OpenGL坐标，除以Constant.AreaWidth，在区域面外的会大于1，即，画在FBO上也是不在图片内的。
      */
     private static float CalculateOppositeCoordinateX(float x) {
-        float result = x / Constant.AreaWidth;
+       float result = x / Constant.AreaWidth;
         return result;
     }
 
     /**
-     * 好像是根据可画的区域去计算OpenGL坐标
+     * 主要是因为在横屏状态下，在空白区域的点击不能画，需要将屏幕坐标换算成
+     * OpenGL坐标，除以Constant.AreaWidth，在区域面外的会大于1，即，画在FBO上也是不在图片内的。
      */
     private static float CalculateOppositeCoordinateY(float y) {
         float result = y / Constant.AreaHeight;
