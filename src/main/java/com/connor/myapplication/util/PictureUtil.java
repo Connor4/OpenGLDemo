@@ -1,7 +1,5 @@
 package com.connor.myapplication.util;
 
-import android.util.Log;
-
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
@@ -160,7 +158,8 @@ public class PictureUtil {
                         (mXOffset - strideX + 1) / 2, ((mYOffset + strideY) - 1) / 2, 0.0f, 1.0f,
                         //ST,ST
                         mXOffset - strideX, mYOffset - strideY, //XY
-                        (mXOffset - strideX + 1) / 2, ((mYOffset - strideY) - 1) / 2, 0.0f, 0.0f//ST,ST
+                        (mXOffset - strideX + 1) / 2, ((mYOffset - strideY) - 1) / 2, 0.0f, 0.0f
+                        //ST,ST
                 };
         return vertices;
     }
@@ -170,16 +169,16 @@ public class PictureUtil {
      * 按照纹理比例在Y轴乘以比例就可以得到Y轴应该变的大小
      */
     private static void calculateStride() {
-        float ratio = TextureHelper.getBitmapOptions();
-        if (ratio > 1) {
-            mStrideX = 0.05f;
-            mStrideY = 0.05f;
-            mStrideY /= ratio;
-        } else {
+        float ratio = (float) Constant.mSurfaceViewHeight / (float) Constant.mSurfaceViewWidth;
+//        if (ratio > 1) {
             mStrideX = 0.025f;
             mStrideY = 0.025f;
-            mStrideY *= ratio;
-        }
+            mStrideY /= ratio;
+//        } else {
+//            mStrideX = 0.025f;
+//            mStrideY = 0.025f;
+//            mStrideY *= ratio;
+//        }
     }
 
     /**
