@@ -334,7 +334,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         }
         return true;
     }
-
+//缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
     @Override
     public boolean handlePinchGesture(MotionEvent event) {
         mOldDist = mNewDist;
