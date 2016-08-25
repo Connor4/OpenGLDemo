@@ -137,7 +137,7 @@ public class MainActivity extends Activity {
                             break;
                     }
                 }
-                return mReTravel;
+                return true;
             }
         });
 

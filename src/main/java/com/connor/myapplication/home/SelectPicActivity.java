@@ -17,8 +17,6 @@ public class SelectPicActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_pic);
- //       calculateSurfaceSize();
-
         bundle = new Bundle();
     }
 
@@ -36,33 +34,4 @@ public class SelectPicActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-/*
-    *//**
-     * 通过布局中weight简单计算出SurfaceView宽高和获取屏幕宽高
-     * 获取屏幕宽高，设置背景纹理大小用
-     *//*
-    private void calculateSurfaceSize() {
-        DisplayMetrics dm = getResources().getDisplayMetrics();
-        Constant.ScreenWidth = dm.widthPixels;
-        Constant.ScreenHeight = dm.heightPixels;
-        Constant.mSurfaceViewWidth = dm.widthPixels;
-        Constant.mSurfaceViewHeight = (int) ((dm.heightPixels - getStatusHeight()) * 0.9f);
-    }
-
-    *//**
-     * 获取通知栏高度
-     *//*
-    private int getStatusHeight() {
-        int statusHeight = -1;
-        try {
-            Class<?> clazz = Class.forName("com.android.internal.R$dimen");
-            Object object = clazz.newInstance();
-            int height = Integer.parseInt(clazz.getField("status_bar_height")
-                    .get(object).toString());
-            statusHeight = getResources().getDimensionPixelSize(height);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return statusHeight;
-    }*/
 }

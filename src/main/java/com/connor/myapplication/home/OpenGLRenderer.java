@@ -328,8 +328,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
             //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价
             //的距离就可以了
-            mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x) / projectionMatrix[0];
-            mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y) / projectionMatrix[5];
+//            mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x) / projectionMatrix[0];
+//            mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y) / projectionMatrix[5];
 
         }
         return true;
@@ -341,14 +341,25 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mNewDist = spacing(event);
         mZoom = mNewDist / mOldDist;
 
+        mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
+        mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
+        midPoint(mZoomDragMidPoint, event);
+
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mZoomMidPoint, event);
+            //缩放倍数
             mScaleX = mScaleY = mZoom;
-//            Log.d("TAG", "X  " + mZoomMidPoint.x * (1 - mZoom) + "  Y  " + mZoomMidPoint.y * (1 -
-//                    mZoom));
-            mTranslateX = XOffset(mZoomMidPoint.x * (1 - mZoom)) / projectionMatrix[0];
-            mTranslateY = YOffset(mZoomMidPoint.y * (1 - mZoom)) / projectionMatrix[5];
-            Log.d("TAG", "X  " + mTranslateX + "  Y  " + mTranslateY);
+            //平移距离
+            mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
+                    projectionMatrix[0];
+            mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
+                    projectionMatrix[5];
+            //缩放补偿的偏移量
+            mTranslateX += XOffset(mZoomDragMidPoint.x) * (1 - mZoom);
+            mTranslateY += YOffset(mZoomDragMidPoint.y) * (1 - mZoom);
+            Log.d("TAG", "zoom   " + mZoom + "   X  " + XOffset(mZoomDragMidPoint.x) * (1 -
+                    mZoom) + "   Y  " + YOffset
+                    (mZoomDragMidPoint.y) * (1 - mZoom));
         }
         return true;
     }
@@ -403,18 +414,17 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      * @return
      */
     private float XOffset(float dis) {
-        return dis / Constant.mSurfaceViewWidth * 2;
+        return (dis / (float) Constant.mSurfaceViewWidth) * 2 - 1;
     }
 
     /**
-     * 这个同样是计算距离，但是不同上面那个，上面那个是点来计算距离，
-     * 所以要换算一下再减，这个直接就是换算成OpenGL坐标就可以了
+     * 同上
      *
      * @param dis 世界坐标下的距离
      * @return
      */
     private float YOffset(float dis) {
-        return dis / Constant.mSurfaceViewHeight *2;
+        return 1 - (dis / (float) Constant.mSurfaceViewHeight) * 2;
     }
 
     //===================手势部分end========================
