@@ -1,5 +1,7 @@
 package com.connor.myapplication.util;
 
+import android.util.Log;
+
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
@@ -93,17 +95,24 @@ public class PictureUtil {
         return vertices;
     }
 
-    /*  *
-         * 这个方法是因为在横屏状态下，FBO上转回屏幕Y轴会压缩，对应的点Y轴距离就会变小
-         * 这里计算补偿所压缩距离
-         */
+    /**
+     * 这个方法是因为在横屏状态下，FBO上转回屏幕Y轴会压缩，对应的点Y轴距离就会变小
+     * 这里计算补偿所压缩距离
+     */
     public static float[] calculateOppositePointsArea(PointBean p) {
         float strideX = mFBOStrideX;
         float strideY = mFBOStrideY;
         if (Constant.CURRENT_USE_TYPE == Constant.WALLPAPER) {
             float addStride = changeStride();
             strideX += addStride;
-            strideY += addStride;
+            float ratio = (float) Constant.mSurfaceViewHeight / (float) Constant.mSurfaceViewWidth;
+            //因为两种方向的照片需要在Y轴补偿不同的量，这个判断条件应该具有通用性
+            if (Constant.AreaHeight < Constant.AreaWidth) {
+                strideY += addStride * ratio;
+            } else {
+                strideY += addStride / ratio;
+            }
+
         }
         //烟花笔要放大一点距离不然不明显
         if (Constant.CURRENT_USE_TYPE == Constant.FIREWORKS) {
@@ -135,7 +144,7 @@ public class PictureUtil {
      * 计算FBO上面需要的效果区域,这里包含两个纹理。
      * 第一个ST坐标是点击位置所对应的原图位置，即取一定位置的ST坐标，取出来的是那个位置的纹理
      * 第二个ST坐标是放置黑白圆圈那张图的ST
-     * 具体的忘了，是用原图纹理和点的问题重合。看看program和脚本
+     * 具体的忘了，是用原图纹理和点的纹理重合。看看program和脚本
      */
     public static float[] calculateOppositeEffectArea(PointBean p) {
         float strideX = mFBOStrideX;
@@ -170,15 +179,9 @@ public class PictureUtil {
      */
     private static void calculateStride() {
         float ratio = (float) Constant.mSurfaceViewHeight / (float) Constant.mSurfaceViewWidth;
-//        if (ratio > 1) {
-            mStrideX = 0.025f;
-            mStrideY = 0.025f;
-            mStrideY /= ratio;
-//        } else {
-//            mStrideX = 0.025f;
-//            mStrideY = 0.025f;
-//            mStrideY *= ratio;
-//        }
+        mStrideX = 0.03f;
+        mStrideY = 0.03f;
+        mStrideY /= ratio;
     }
 
     /**
