@@ -39,7 +39,6 @@ public class ObjectUtil {
                 break;
 
             case Constant.FIREWORKS:
-         //       CreateAndAddOppositePoint(glOppositeX, glOppositeY);
                 CreateAndAddFireWorkPoint(glOppositeX, glOppositeY);
                 break;
 
@@ -122,7 +121,6 @@ public class ObjectUtil {
                         CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     case Constant.FIREWORKS:
-         //              CreateAndAddOppositePoint(p.getX(), p.getY());
                         CreateAndAddFireWorkPoint(p.getX(), p.getY());
                         break;
                     case Constant.MOSAIC:

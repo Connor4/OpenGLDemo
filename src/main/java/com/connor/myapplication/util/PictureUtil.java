@@ -1,5 +1,7 @@
 package com.connor.myapplication.util;
 
+import android.util.Log;
+
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
@@ -145,10 +147,10 @@ public class PictureUtil {
         strideX *= 3;//变宽一点
         strideY *= 3;
         calculateOffset(p);
-
+        //生成随机角度
         Random random = new Random();
         int angle = random.nextInt(360) % (360 + 1);
-        //以顺时针方向排布
+        //以正方形四个角顺时针方向排布
         float OneX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
         float OneY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
         float TwoX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
@@ -167,6 +169,9 @@ public class PictureUtil {
                         mXOffset - FourX, mYOffset + FourY, 0.0f, 0.0f,//
                         mXOffset - ThreeX, mYOffset - ThreeY, 0.0f, 1.0f,//
                 };
+        for (int i = 0; i < vertices.length; i++) {
+            Log.d("TAG", "  " + vertices[i]);
+        }
         return vertices;
     }
 
