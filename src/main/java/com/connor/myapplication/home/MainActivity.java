@@ -147,6 +147,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         calculateSurfaceSize();
+        PictureUtil.reSetStride();//为了重新设置投影矩阵
     }
 
     public void FireWorks(View view) {

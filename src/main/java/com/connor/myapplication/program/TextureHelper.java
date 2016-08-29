@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.util.Log;
 
 import com.connor.myapplication.data.Constant;
 
@@ -50,8 +51,6 @@ public class TextureHelper {
 
         Bitmap bitmapTmp = BitmapFactory.decodeResource(
                 context.getResources(), resourceId, options);
-
-//        Bitmap bitmap = getResizedBitmap(bitmapTmp, Constant.ScreenWidth, Constant.ScreenHeight );
 
         if (bitmapTmp == null) {
 
@@ -118,8 +117,6 @@ public class TextureHelper {
      * 缩放bitmap,
      *
      * @param bm        被缩放的bitmap
-     * @param newWidth  bitmap.width/4
-     * @param newHeight bitmap.height/4
      * @return 新大小的bitmap
      */
     public static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
@@ -136,7 +133,7 @@ public class TextureHelper {
         return resizedBitmap;
     }
 
-    /**w
+    /**
      * 获取照片的比率
      * @return
      */

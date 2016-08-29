@@ -1,8 +1,5 @@
 package com.connor.myapplication.home;
 
-import android.support.v7.widget.SwitchCompat;
-
-import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.data.VertexArray;
 import com.connor.myapplication.program.TextureShaderProgram;
@@ -13,9 +10,9 @@ import static android.opengl.GLES20.glDrawArrays;
 import static com.connor.myapplication.data.Constant.BYTES_PER_FLOAT;
 
 /**
- * Created by meitu on 2016/8/2.
+ * Created by meitu on 2016/8/29.
  */
-public class FBOPoints extends Mesh {
+public class FireWorkPoints extends Mesh {
     private static final int POSITION_COMPONENT_COUNT = 2;
     private static final int TEXTURE_COORDINATES_COMPONENT_COUNT = 2;
     private static final int STRIDE = (POSITION_COMPONENT_COUNT
@@ -24,8 +21,8 @@ public class FBOPoints extends Mesh {
     private float[] vertices;
     private final VertexArray vertexArray;
 
-    public FBOPoints(PointBean pb) {
-        vertices = PictureUtil.calculateOppositePointsArea(pb);
+    public FireWorkPoints(PointBean pb) {
+        vertices = PictureUtil.calculateFireWorkPointArea(pb);
         vertexArray = new VertexArray(vertices);
     }
 

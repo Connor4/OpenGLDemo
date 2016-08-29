@@ -5,7 +5,6 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.util.Log;
 import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
@@ -72,7 +71,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     private final float[] modelMatrix = new float[16];
     private final float[] temp = new float[16];
     //=======手势部分end======
-
 
     public OpenGLRenderer(Context mContext, int resourceId) {
         this.mContext = mContext;
@@ -178,7 +176,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             case Constant.FIREWORKS:
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
+                mRoot.drawFireWork(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
                         .SelectFireWorkTexture());
 
                 glDisable(GL_BLEND);
@@ -334,7 +332,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         }
         return true;
     }
-//缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
+
+    //缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
     @Override
     public boolean handlePinchGesture(MotionEvent event) {
         mOldDist = mNewDist;
@@ -357,9 +356,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             //缩放补偿的偏移量
             mTranslateX += XOffset(mZoomDragMidPoint.x) * (1 - mZoom);
             mTranslateY += YOffset(mZoomDragMidPoint.y) * (1 - mZoom);
-            Log.d("TAG", "zoom   " + mZoom + "   X  " + XOffset(mZoomDragMidPoint.x) * (1 -
-                    mZoom) + "   Y  " + YOffset
-                    (mZoomDragMidPoint.y) * (1 - mZoom));
+//            Log.d("TAG", "zoom   " + mZoom + "   X  " + XOffset(mZoomDragMidPoint.x) * (1 -
+//                    mZoom) + "   Y  " + YOffset
+//                    (mZoomDragMidPoint.y) * (1 - mZoom));
         }
         return true;
     }
@@ -407,8 +406,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     /**
-     * 这个同样是计算距离，但是不同上面那个，上面那个是点来计算距离，
-     * 所以要换算一下再减，这个直接就是换算成OpenGL坐标就可以了
+     * 换算成OpenGL坐标，先换算坐标可以保留正负，不用再赋值正负
      *
      * @param dis 世界坐标下的距离
      * @return

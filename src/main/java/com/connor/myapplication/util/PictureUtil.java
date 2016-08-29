@@ -1,7 +1,5 @@
 package com.connor.myapplication.util;
 
-import android.util.Log;
-
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
@@ -112,12 +110,6 @@ public class PictureUtil {
             } else {
                 strideY += addStride / ratio;
             }
-
-        }
-        //烟花笔要放大一点距离不然不明显
-        if (Constant.CURRENT_USE_TYPE == Constant.FIREWORKS) {
-            strideX *= 2;
-            strideY *= 2;
         }
 
         calculateOffset(p);
@@ -135,6 +127,45 @@ public class PictureUtil {
                         0.0f, 0.0f,//ST
                         mXOffset - strideX, mYOffset - strideY, //XY
                         0.0f, 1.0f,//ST
+                };
+        return vertices;
+    }
+
+    /**
+     * 给烟花笔计算顶点用，跟{@link #calculateOppositePointsArea} 不同的是这里需要随机旋转
+     * 公式x' = x * cos(angle) + y * sin(angle), y' = y * sin(angle) - x * cos(angle)
+     * 以mXOffset，mYOffset为原点计算出旋转后的x',y'的位置，再跟上面一样放置
+     *
+     * @param p
+     * @return
+     */
+    public static float[] calculateFireWorkPointArea(PointBean p) {
+        float strideX = mFBOStrideX;
+        float strideY = mFBOStrideY;
+        strideX *= 3;//变宽一点
+        strideY *= 3;
+        calculateOffset(p);
+
+        Random random = new Random();
+        int angle = random.nextInt(360) % (360 + 1);
+        //以顺时针方向排布
+        float OneX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
+        float OneY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
+        float TwoX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
+        float TwoY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
+        float ThreeX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
+        float ThreeY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
+        float FourX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
+        float FourY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
+
+        float[] vertices = new float[]
+                {       //X,Y,S,T
+                        mXOffset, mYOffset, 0.5f, 0.5f,//XY,ST
+                        mXOffset - ThreeX, mYOffset - ThreeY, 0.0f, 1.0f,//
+                        mXOffset + TwoX, mYOffset - TwoY, 1.0f, 1.0f,//
+                        mXOffset + OneX, mYOffset + OneY, 1.0f, 0.0f,//
+                        mXOffset - FourX, mYOffset + FourY, 0.0f, 0.0f,//
+                        mXOffset - ThreeX, mYOffset - ThreeY, 0.0f, 1.0f,//
                 };
         return vertices;
     }
@@ -210,6 +241,10 @@ public class PictureUtil {
     public static void reSetStride() {
         calculateStride();
         calculateFBOStride();
+        //重新设置投影矩阵
+        projectionMatrix[0] = 1;
+        projectionMatrix[12] = 0;
+        projectionMatrix[13] = 0;
     }
 
     /**

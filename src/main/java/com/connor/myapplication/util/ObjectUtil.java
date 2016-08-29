@@ -6,6 +6,7 @@ import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.home.FBOEffectPoints;
 import com.connor.myapplication.home.FBOPoints;
+import com.connor.myapplication.home.FireWorkPoints;
 import com.connor.myapplication.home.OpenGLRenderer;
 
 import java.util.ArrayList;
@@ -38,7 +39,8 @@ public class ObjectUtil {
                 break;
 
             case Constant.FIREWORKS:
-                CreateAndAddOppositePoint(glOppositeX, glOppositeY);
+         //       CreateAndAddOppositePoint(glOppositeX, glOppositeY);
+                CreateAndAddFireWorkPoint(glOppositeX, glOppositeY);
                 break;
 
             case Constant.MOSAIC:
@@ -77,6 +79,16 @@ public class ObjectUtil {
         mRenderer.addOppositeMesh(points);
     }
 
+    /**
+     * 烟花笔自己用的对象
+     * @param x
+     * @param y
+     */
+    private static void CreateAndAddFireWorkPoint(float x, float y) {
+        FireWorkPoints points = new FireWorkPoints(new PointBean(x, y));
+        mRenderer.addOppositeMesh(points);
+    }
+
 
     /**
      * 用点画线
@@ -110,7 +122,8 @@ public class ObjectUtil {
                         CreateAndAddOppositePoint(p.getX(), p.getY());
                         break;
                     case Constant.FIREWORKS:
-                        CreateAndAddOppositePoint(p.getX(), p.getY());
+         //              CreateAndAddOppositePoint(p.getX(), p.getY());
+                        CreateAndAddFireWorkPoint(p.getX(), p.getY());
                         break;
                     case Constant.MOSAIC:
                         CreateAndAddOppositeEffect(p.getX(), p.getY());
