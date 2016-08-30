@@ -144,12 +144,13 @@ public class PictureUtil {
     public static float[] calculateFireWorkPointArea(PointBean p) {
         float strideX = mFBOStrideX;
         float strideY = mFBOStrideY;
-        strideX *= 3;//变宽一点
-        strideY *= 3;
+        strideX *= 4;//变宽一点
+        strideY *= 4;
         calculateOffset(p);
         //生成随机角度
         Random random = new Random();
-        int angle = random.nextInt(360) % (360 + 1);
+        double angle = random.nextInt(360) % (360 + 1) ;
+        angle = Math.toRadians(angle);
         //以正方形四个角顺时针方向排布
         float OneX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
         float OneY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
@@ -169,9 +170,6 @@ public class PictureUtil {
                         mXOffset - FourX, mYOffset + FourY, 0.0f, 0.0f,//
                         mXOffset - ThreeX, mYOffset - ThreeY, 0.0f, 1.0f,//
                 };
-        for (int i = 0; i < vertices.length; i++) {
-            Log.d("TAG", "  " + vertices[i]);
-        }
         return vertices;
     }
 

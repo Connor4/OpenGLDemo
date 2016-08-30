@@ -89,7 +89,7 @@ public class MainActivity extends Activity {
                                     .GESTURE_MODE_DRAGANDZOOM) {
 
                                 edgeTest();
-                                mReTravel = mGestureHandleCallback.handleDragGesture(event);
+               //                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
                                 mReTravel = mGestureHandleCallback.handlePinchGesture(event);
                                 mGLSurfaceView.requestRender();
 
