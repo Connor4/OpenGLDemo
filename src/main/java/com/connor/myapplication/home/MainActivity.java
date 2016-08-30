@@ -88,7 +88,6 @@ public class MainActivity extends Activity {
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAGANDZOOM) {
 
-                                edgeTest();
                //                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
                                 mReTravel = mGestureHandleCallback.handlePinchGesture(event);
                                 mGLSurfaceView.requestRender();
@@ -256,13 +255,6 @@ public class MainActivity extends Activity {
 
 
 //=====================手势部分start===========================
-
-    /**
-     * 边界测试，超过边界就逐渐变回最开始的位置
-     */
-    private void edgeTest() {
-
-    }
 
     private GestureHandleCallback mGestureHandleCallback;
 
