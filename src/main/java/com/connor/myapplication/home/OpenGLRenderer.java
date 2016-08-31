@@ -286,7 +286,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         mDragMidPoint.x = mDragMidPoint.y = 0;
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
         //传递投影矩阵给这个工具类计算偏移量
-        PictureUtil.projectionMatrix = projectionMatrix;
+        PictureUtil.projectionMatrix0 = projectionMatrix[0];
+        PictureUtil.projectionMatrix12 = projectionMatrix[12];
+        PictureUtil.projectionMatrix13 = projectionMatrix[13];
     }
 
 

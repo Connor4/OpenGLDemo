@@ -21,7 +21,9 @@ public class PictureUtil {
     public static float mXOffset;
     public static float mYOffset;
     //投影矩阵，用于计算偏移量
-    public static float[] projectionMatrix = new float[16];
+    public static float projectionMatrix0;
+    public static float projectionMatrix12;
+    public static float projectionMatrix13;
 
     /**
      * 根据相片比例计算纹理所在坐标
@@ -252,10 +254,10 @@ public class PictureUtil {
     public static void reSetStride() {
         calculateStride();
         calculateFBOStride();
-        //重新设置投影矩阵
-        projectionMatrix[0] = 1;
-        projectionMatrix[12] = 0;
-        projectionMatrix[13] = 0;
+        //    重新设置投影矩阵
+        projectionMatrix0 = 1;
+        projectionMatrix12 = 0;
+        projectionMatrix13 = 0;
     }
 
     /**
@@ -269,9 +271,9 @@ public class PictureUtil {
      * 但是平移和缩放的一起来，就必须选计算平移的，再处理缩放的。
      */
     private static void calculateOffset(PointBean p) {
-        float ratio = projectionMatrix[0];//缩放倍数
-        float Xoffset = projectionMatrix[12];//X轴偏移量
-        float Yoffset = projectionMatrix[13];//Y轴偏移量
+        float ratio = projectionMatrix0;//缩放倍数
+        float Xoffset = projectionMatrix12;//X轴偏移量
+        float Yoffset = projectionMatrix13;//Y轴偏移量
         float x = p.getX();
         float y = p.getY();
         if (ratio != 0) {
