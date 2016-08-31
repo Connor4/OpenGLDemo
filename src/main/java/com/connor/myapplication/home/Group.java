@@ -33,26 +33,6 @@ public class Group extends Mesh {
         }
     }
 
-    /**
-     * 因为烟花笔需要旋转，这一步只能从{@link #draw}中分离出来
-     * @param program
-     * @param resourceId
-     */
-    public void drawFireWork(TextureShaderProgram program, int resourceId) {
-        int size;
-        FireWorkPoints object;
-        size = mOppositeContainer.size();
-        for (int i = 0; i < size; i++) {
-            if (mOppositeContainer.peekFirst() != null) {
-                program.useProgram();
-                program.setUniforms(resourceId);
-                object = (FireWorkPoints)mOppositeContainer.pollFirst();
-                object.bindData(program);
-                object.draw();
-                object = null;
-            }
-        }
-    }
 
     public void drawMultiTexture(MosaicTextureShaderProgram program, int resourceId, int pointId) {
         int size;

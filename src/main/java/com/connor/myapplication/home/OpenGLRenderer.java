@@ -176,7 +176,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             case Constant.FIREWORKS:
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-                mRoot.drawFireWork(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
+                mRoot.draw(RendererUtil.CreateFireWorkProgram(mContext), RendererUtil
                         .SelectFireWorkTexture());
 
                 glDisable(GL_BLEND);

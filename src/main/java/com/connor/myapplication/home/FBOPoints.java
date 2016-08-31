@@ -25,7 +25,16 @@ public class FBOPoints extends Mesh {
     private final VertexArray vertexArray;
 
     public FBOPoints(PointBean pb) {
-        vertices = PictureUtil.calculateOppositePointsArea(pb);
+        switch (Constant.CURRENT_USE_TYPE) {
+            case Constant.FIREWORKS:
+                vertices = PictureUtil.calculateFireWorkPointArea(pb);
+                break;
+            default:
+                vertices = PictureUtil.calculateOppositePointsArea(pb);
+                break;
+        }
+
+
         vertexArray = new VertexArray(vertices);
     }
 
