@@ -46,7 +46,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     private Context mContext;
     private int mTexture;
     private int mPointTexture;
-    //    private int mFireWorkTexture;
     private int mTargetTexture;
     private int mReturnTexture;
 
