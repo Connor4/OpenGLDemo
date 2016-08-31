@@ -113,11 +113,16 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
 
-            Matrix.setIdentityM(modelMatrix, 0);
-            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
-            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
+  //          Matrix.setIdentityM(modelMatrix, 0);
+//            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
+//                Log.d("haha", "BEFORE  " + modelMatrix[12] + " xx  "+ modelMatrix[13]);
+
+//            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
+//               Log.d("jeje", "after  " + modelMatrix[12]+ " xx  "+ modelMatrix[13]);
+
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
+            Log.d("jeje", "after  " + projectionMatrix[0]);
 
             drawOnscreen();
         } else {
@@ -323,10 +328,13 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     public boolean handleDragGesture(android.graphics.Matrix matrix, float scaleFactor) {
         float[] result = new float[9];
         matrix.getValues(result);
-        mScaleX = mScaleY = scaleFactor;
-//        mTranslateX = XOffset(result[2]);
-//        mTranslateY = -YOffset(result[5]);
-       Log.d("TAG", "X  " + result[2] + "  Y  "+result[5]+"  ty  "+XOffset(result[2])+" ts "+-YOffset(result[5]));
+       mScaleFactor *=  scaleFactor;
+
+        modelMatrix[0] = mScaleFactor;
+        Log.d("TAG", "haha " + scaleFactor + "  hehe  " + mScaleFactor);
+//        modelMatrix[12] = XOffset(result[2]);
+//        modelMatrix[13] = -YOffset(result[5]);
+//       Log.d("TAG", "X  " + result[2] + "  Y  "+result[5]+"  ty  "+XOffset(result[2])+" ts "+-YOffset(result[5]));
 
         return true;
     }
