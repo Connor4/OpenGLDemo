@@ -135,8 +135,9 @@ public class PictureUtil {
 
     /**
      * 给烟花笔计算顶点用，跟{@link #calculateOppositePointsArea} 不同的是这里需要随机旋转
-     * 公式x' = x * cos(angle) + y * sin(angle), y' = y * sin(angle) - x * cos(angle)
-     * 以mXOffset，mYOffset为原点计算出旋转后的x',y'的位置，再跟上面一样放置
+     * 设平面上一点（x1,y1），绕另一点（x0,y0）逆时针旋转A角度后的点为（x2,y2）,则：
+     * x2 = (x1-x0)*cosA - (y1-y0)*sinA + x0
+     * y2 = (x1-x0)*sinA + (y1-y0)*cosA + y0
      *
      * @param p
      * @return
@@ -144,31 +145,38 @@ public class PictureUtil {
     public static float[] calculateFireWorkPointArea(PointBean p) {
         float strideX = mFBOStrideX;
         float strideY = mFBOStrideY;
-        strideX *= 4;//变宽一点
-        strideY *= 4;
+        strideX *= 3;//变宽一点
+        strideY *= 3;
         calculateOffset(p);
         //生成随机角度
         Random random = new Random();
-        double angle = random.nextInt(360) % (360 + 1) ;
+        double angle = random.nextInt(360) % (360 + 1);
         angle = Math.toRadians(angle);
-        //以正方形四个角顺时针方向排布
-        float OneX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
-        float OneY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
-        float TwoX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
-        float TwoY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
-        float ThreeX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
-        float ThreeY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
-        float FourX = strideX * (float) Math.cos(angle) + strideY * (float) Math.sin(angle);
-        float FourY = strideY * (float) Math.sin(angle) - strideX * (float) Math.cos(angle);
-
+        //以正方形四个角顺时针方向排布来计算出四个顶点对应旋转后的坐标
+        float OneX = strideX * (float) Math.cos(angle) - strideY * (float) Math.sin(angle) +
+                mXOffset;
+        float OneY = strideX * (float) Math.sin(angle) + strideY * (float) Math.cos(angle) +
+                mYOffset;
+        float TwoX = strideX * (float) Math.cos(angle) - (-strideY) * (float) Math.sin(angle) +
+                mXOffset;
+        float TwoY = strideX * (float) Math.sin(angle) + (-strideY) * (float) Math.cos(angle) +
+                mYOffset;
+        float ThreeX = (-strideX) * (float) Math.cos(angle) - (-strideY) * (float) Math.sin
+                (angle) + mXOffset;
+        float ThreeY = (-strideX) * (float) Math.sin(angle) + (-strideY) * (float) Math.cos
+                (angle) + mYOffset;
+        float FourX = (-strideX) * (float) Math.cos(angle) - strideY * (float) Math.sin(angle) +
+                mXOffset;
+        float FourY = (-strideX) * (float) Math.sin(angle) + strideY * (float) Math.cos(angle) +
+                mYOffset;
         float[] vertices = new float[]
                 {       //X,Y,S,T
                         mXOffset, mYOffset, 0.5f, 0.5f,//XY,ST
-                        mXOffset - ThreeX, mYOffset - ThreeY, 0.0f, 1.0f,//
-                        mXOffset + TwoX, mYOffset - TwoY, 1.0f, 1.0f,//
-                        mXOffset + OneX, mYOffset + OneY, 1.0f, 0.0f,//
-                        mXOffset - FourX, mYOffset + FourY, 0.0f, 0.0f,//
-                        mXOffset - ThreeX, mYOffset - ThreeY, 0.0f, 1.0f,//
+                        ThreeX, ThreeY, 0.0f, 1.0f,//
+                        TwoX, TwoY, 1.0f, 1.0f,//
+                        OneX, OneY, 1.0f, 0.0f,//
+                        FourX, FourY, 0.0f, 0.0f,//
+                        ThreeX, ThreeY, 0.0f, 1.0f,
                 };
         return vertices;
     }
