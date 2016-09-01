@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
 
                     switch (action & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_DOWN:
+                            BezierUtil.releasePoints();
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
                             ObjectUtil.setPointCoordinate(currentX, currentY);
                             //添加点，用于贝塞尔曲线
@@ -88,7 +89,7 @@ public class MainActivity extends Activity {
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAGANDZOOM) {
 
-               //                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
+//                                mReTravel = mGestureHandleCallback.handleDragGesture(event);
                                 mReTravel = mGestureHandleCallback.handlePinchGesture(event);
                                 mGLSurfaceView.requestRender();
 

@@ -254,10 +254,6 @@ public class PictureUtil {
     public static void reSetStride() {
         calculateStride();
         calculateFBOStride();
-        //    重新设置投影矩阵
-        projectionMatrix0 = 1;
-        projectionMatrix12 = 0;
-        projectionMatrix13 = 0;
     }
 
     /**

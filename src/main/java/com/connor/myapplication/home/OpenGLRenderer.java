@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
@@ -110,8 +111,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
 
             Matrix.setIdentityM(modelMatrix, 0);
-            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
             Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
+            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
 
@@ -337,10 +338,11 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     //缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
     @Override
     public boolean handlePinchGesture(MotionEvent event) {
+        //缩放
         mOldDist = mNewDist;
         mNewDist = spacing(event);
         mZoom = mNewDist / mOldDist;
-
+        //平移
         mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
         mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
         midPoint(mZoomDragMidPoint, event);
@@ -348,15 +350,20 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
             midPoint(mZoomMidPoint, event);
             //缩放倍数
-            mScaleX = mScaleY = mZoom;
+                mScaleX = mScaleY = mZoom;
             //平移距离
             mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
                     projectionMatrix[0];
             mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
-                    projectionMatrix[5];
+                    projectionMatrix[0];
             //缩放补偿的偏移量
-            mTranslateX += XOffset(mZoomDragMidPoint.x) * (1 - mZoom);
-            mTranslateY += YOffset(mZoomDragMidPoint.y) * (1 - mZoom);
+            float Xdistance = Xdis(mZoomMidPoint.x);
+            float Ydistance = Ydis(mZoomMidPoint.y);
+            mTranslateX = Xdistance * (1 - mZoom);
+            mTranslateY = Ydistance * (1 - mZoom);
+//            Log.d("TAG", "X  " + mTranslateX + " T " + mTranslateY);
+//            mTranslateX = XOffset(mZoomDragMidPoint.x) * (1 - mZoom);
+//            mTranslateY = YOffset(mZoomDragMidPoint.y) * (1 - mZoom);
 //            Log.d("TAG", "zoom   " + mZoom + "   X  " + XOffset(mZoomDragMidPoint.x) * (1 -
 //                    mZoom) + "   Y  " + YOffset
 //                    (mZoomDragMidPoint.y) * (1 - mZoom));
@@ -404,6 +411,16 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
         float glY1 = 1 - (p1 / (float) Constant.mSurfaceViewHeight) * 2;
         float glY2 = 1 - (p2 / (float) Constant.mSurfaceViewHeight) * 2;
         return glY1 - glY2;
+    }
+
+    private float Xdis(float p) {
+        float x = (p/(float) Constant.mSurfaceViewWidth) * 2 -1;
+        return x;
+    }
+
+    private float Ydis(float p) {
+        float y = 1- (p /(float) Constant.mSurfaceViewHeight) * 2;
+        return y;
     }
 
     /**
