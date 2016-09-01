@@ -3,12 +3,16 @@ package com.connor.myapplication.home;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Matrix;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v7.widget.DecorToolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -23,6 +27,8 @@ import com.connor.myapplication.util.PictureUtil;
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
+    private ScaleGestureDetector mScaleDetector;
+    private Matrix mScaleMartix = new Matrix();
     private int mResourceId;
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
@@ -52,10 +58,13 @@ public class MainActivity extends Activity {
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
         mGestureHandleCallback = mRenderer;
 
+        mScaleDetector = new ScaleGestureDetector(MainActivity.this, mScaleListener);
+        mScaleMartix.reset();
+
         mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
+                mScaleDetector.onTouchEvent(event);
                 if (event != null) {
 
                     final int action = MotionEventCompat.getActionMasked(event);
@@ -88,9 +97,10 @@ public class MainActivity extends Activity {
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAGANDZOOM) {
 
-               //                 mReTravel = mGestureHandleCallback.handleDragGesture(event);
-                                mReTravel = mGestureHandleCallback.handlePinchGesture(event);
-                                mGLSurfaceView.requestRender();
+                                //                 mReTravel = mGestureHandleCallback
+                                // .handleDragGesture(event);
+                          //      mReTravel = mGestureHandleCallback.handlePinchGesture(event);
+                             //   mGLSurfaceView.requestRender();
 
                             }
                             break;
@@ -258,8 +268,36 @@ public class MainActivity extends Activity {
 
     private GestureHandleCallback mGestureHandleCallback;
 
+    private ScaleGestureDetector.OnScaleGestureListener mScaleListener = new ScaleGestureDetector
+            .OnScaleGestureListener() {
+
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            float scaleFactor = detector.getScaleFactor();
+            if (Float.isInfinite(scaleFactor) || Float.isNaN(scaleFactor)) return false;
+
+            mScaleMartix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector
+                    .getFocusY());
+
+            mGestureHandleCallback.handleDragGesture(mScaleMartix, scaleFactor);
+            mGLSurfaceView.requestRender();
+
+            return true;
+        }
+
+        @Override
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
+            return true;
+        }
+
+        @Override
+        public void onScaleEnd(ScaleGestureDetector detector) {
+
+        }
+    };
+
     public interface GestureHandleCallback {
-        boolean handleDragGesture(MotionEvent event);
+        boolean handleDragGesture(Matrix matrix, float scaleFactor);
 
         boolean handlePinchGesture(MotionEvent event);
     }

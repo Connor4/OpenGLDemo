@@ -5,6 +5,7 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.connor.myapplication.R;
@@ -66,6 +67,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     private float mZoom = 0f;
     private float mTranslateX = 0, mTranslateY = 0, mScaleX = 1, mScaleY = 1;
 
+    private float mScaleFactor = 1;
+
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
     private final float[] temp = new float[16];
@@ -109,11 +112,16 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
 
-            Matrix.setIdentityM(modelMatrix, 0);
-            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
-            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
+  //          Matrix.setIdentityM(modelMatrix, 0);
+//            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
+//                Log.d("haha", "BEFORE  " + modelMatrix[12] + " xx  "+ modelMatrix[13]);
+
+//            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
+//               Log.d("jeje", "after  " + modelMatrix[12]+ " xx  "+ modelMatrix[13]);
+
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
+            Log.d("jeje", "after  " + projectionMatrix[0]);
 
             drawOnscreen();
         } else {
@@ -318,49 +326,47 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      * 用两指的中点计算偏移量
      */
     @Override
-    public boolean handleDragGesture(MotionEvent event) {
-        mLastDragMidPoint.x = mDragMidPoint.x;
-        mLastDragMidPoint.y = mDragMidPoint.y;
-        midPoint(mDragMidPoint, event);
+    public boolean handleDragGesture(android.graphics.Matrix matrix, float scaleFactor) {
+        float[] result = new float[9];
+        matrix.getValues(result);
+       mScaleFactor *=  scaleFactor;
 
-        if (mLastDragMidPoint.x != 0 && mLastDragMidPoint.y != 0) {
-            //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
-            //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价
-            //的距离就可以了
-//            mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x) / projectionMatrix[0];
-//            mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y) / projectionMatrix[5];
+        modelMatrix[0] = mScaleFactor;
+        Log.d("TAG", "haha " + scaleFactor + "  hehe  " + mScaleFactor);
+//        modelMatrix[12] = XOffset(result[2]);
+//        modelMatrix[13] = -YOffset(result[5]);
+//       Log.d("TAG", "X  " + result[2] + "  Y  "+result[5]+"  ty  "+XOffset(result[2])+" ts "+-YOffset(result[5]));
 
-        }
         return true;
     }
 
     //缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
     @Override
     public boolean handlePinchGesture(MotionEvent event) {
-        mOldDist = mNewDist;
-        mNewDist = spacing(event);
-        mZoom = mNewDist / mOldDist;
-
-        mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
-        mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
-        midPoint(mZoomDragMidPoint, event);
-
-        if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
-            midPoint(mZoomMidPoint, event);
-            //缩放倍数
-            mScaleX = mScaleY = mZoom;
-            //平移距离
-            mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
-                    projectionMatrix[0];
-            mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
-                    projectionMatrix[5];
-            //缩放补偿的偏移量
-            mTranslateX += XOffset(mZoomDragMidPoint.x) * (1 - mZoom);
-            mTranslateY += YOffset(mZoomDragMidPoint.y) * (1 - mZoom);
+//        mOldDist = mNewDist;
+//        mNewDist = spacing(event);
+//        mZoom = mNewDist / mOldDist;
+//
+//        mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
+//        mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
+//        midPoint(mZoomDragMidPoint, event);
+//
+//        if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
+//            midPoint(mZoomMidPoint, event);
+//            //缩放倍数
+//            mScaleX = mScaleY = mZoom;
+//            //平移距离
+//            mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
+//                    projectionMatrix[0];
+//            mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
+//                    projectionMatrix[5];
+//            //缩放补偿的偏移量
+//            mTranslateX += XOffset(mZoomDragMidPoint.x) * (1 - mZoom);
+//            mTranslateY += YOffset(mZoomDragMidPoint.y) * (1 - mZoom);
 //            Log.d("TAG", "zoom   " + mZoom + "   X  " + XOffset(mZoomDragMidPoint.x) * (1 -
 //                    mZoom) + "   Y  " + YOffset
 //                    (mZoomDragMidPoint.y) * (1 - mZoom));
-        }
+//        }
         return true;
     }
 
