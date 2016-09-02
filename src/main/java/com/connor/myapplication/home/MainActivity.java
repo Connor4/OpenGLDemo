@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
     private int mResourceId;
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
-    private boolean mReTravel = true;//判断是否是回弹
+    private boolean mRebound = false;//判断是否是回弹
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,6 @@ public class MainActivity extends Activity {
         rl.addView(mGLSurfaceView);
 
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
-        mGestureHandleCallback = mRenderer;
 
         mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -65,11 +64,11 @@ public class MainActivity extends Activity {
 
                     switch (action & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_DOWN:
-                            BezierUtil.releasePoints();
+                            BezierUtil.releasePoints();//再清一次保证容器空了
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
+
                             ObjectUtil.setPointCoordinate(currentX, currentY);
-                            //添加点，用于贝塞尔曲线
-                            BezierUtil.addScreenPoint(currentX, currentY);
+                            BezierUtil.addScreenPoint(currentX, currentY);//添加点，用于贝塞尔曲线
 
                             break;
 
@@ -89,8 +88,7 @@ public class MainActivity extends Activity {
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAGANDZOOM) {
 
-//                                mReTravel = mGestureHandleCallback.handleDragGesture(event);
-                                mReTravel = mGestureHandleCallback.handlePinchGesture(event);
+                                mRebound = mRenderer.handlePinchGesture(event);
                                 mGLSurfaceView.requestRender();
 
                             }
@@ -107,15 +105,17 @@ public class MainActivity extends Activity {
                                 });
                             }
 
-                            mGLSurfaceView.queueEvent(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mRenderer.freeGestureStatus();
-                                }
-                            });
+                            if (mGestureFlag) {
+                                mGLSurfaceView.queueEvent(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        mRenderer.freeGestureStatus();
+                                    }
+                                });
+                            }
 
-                            BezierUtil.releasePoints();
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
+                            BezierUtil.releasePoints();
 
                             break;
 
@@ -127,7 +127,6 @@ public class MainActivity extends Activity {
                                     mRenderer.freeGestureStatus();
                                 }
                             });
-
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             mGestureFlag = false;
 
@@ -147,7 +146,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         calculateSurfaceSize();
-        PictureUtil.reSetStride();//为了重新设置投影矩阵
+        PictureUtil.reSetStride();
     }
 
     public void FireWorks(View view) {
@@ -229,6 +228,9 @@ public class MainActivity extends Activity {
         return false;
     }
 
+    /**
+     * 计算相关参数
+     */
     private void calculateSurfaceSize() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         Constant.ScreenWidth = dm.widthPixels;
@@ -255,16 +257,16 @@ public class MainActivity extends Activity {
     }
 
 
-//=====================手势部分start===========================
+    //=====================回弹start===========================
 
-    private GestureHandleCallback mGestureHandleCallback;
-
-    public interface GestureHandleCallback {
-        boolean handleDragGesture(MotionEvent event);
-
-        boolean handlePinchGesture(MotionEvent event);
+    /**
+     * 通过缩放回调结果判断是否回弹
+     */
+    private void checkRebound(){
+        if (mRebound) {
+            //调用回调
+        }
     }
+    //=====================回弹end===========================
 
-
-//=====================手势部分end=========================
 }

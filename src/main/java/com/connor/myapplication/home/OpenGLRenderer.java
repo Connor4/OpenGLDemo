@@ -34,7 +34,7 @@ import static android.opengl.GLES20.glDisable;
 import static android.opengl.GLES20.glEnable;
 import static android.opengl.GLES20.glViewport;
 
-public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.GestureHandleCallback {
+public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private TextureShaderProgram mTextureProgram;
     private TextureShaderProgram mPointProgram;
     private TextureShaderProgram mEraserProgram;
@@ -70,6 +70,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     private final float[] modelMatrix = new float[16];
     private final float[] temp = new float[16];
     //=======手势部分end======
+    //=======回弹部分start=====
+    private static final float MAX_SCALE = 4.0f;//最大缩放倍数
+    //=======回弹部分end=====
 
     public OpenGLRenderer(Context mContext, int resourceId) {
         this.mContext = mContext;
@@ -314,28 +317,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
 
     //===================手势部分start========================
 
-    /**
-     * 用两指的中点计算偏移量
-     */
-    @Override
-    public boolean handleDragGesture(MotionEvent event) {
-//        mLastDragMidPoint.x = mDragMidPoint.x;
-//        mLastDragMidPoint.y = mDragMidPoint.y;
-//        midPoint(mDragMidPoint, event);
-
-//        if (mLastDragMidPoint.x != 0 && mLastDragMidPoint.y != 0) {
-//            //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
-//            //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价
-//            //的距离就可以了
-//            mTranslateX = Xdistance(mDragMidPoint.x, mLastDragMidPoint.x) / projectionMatrix[0];
-//            mTranslateY = Ydistance(mDragMidPoint.y, mLastDragMidPoint.y) / projectionMatrix[5];
-//
-//        }
-        return true;
-    }
-
     //缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
-    @Override
     public boolean handlePinchGesture(MotionEvent event) {
         //缩放
         mOldDist = mNewDist;
@@ -351,17 +333,20 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
             //缩放倍数
             mScaleX = mScaleY = mZoom;
             //平移距离
-            mTranslateX = Xdistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
+            mTranslateX = XDistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
                     projectionMatrix[0];
-            mTranslateY = Ydistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
+            mTranslateY = YDistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
                     projectionMatrix[0];
             //缩放补偿的偏移量
-            float Xdistance = XOffset(mZoomMidPoint.x);
-            float Ydistance = YOffset(mZoomMidPoint.y);
-            mTranslateX += Xdistance * (1 - mZoom);
-            mTranslateY += Ydistance * (1 - mZoom);
+            mTranslateX += XOffset(mZoomMidPoint.x) * (1 - mZoom);
+            mTranslateY += YOffset(mZoomMidPoint.y) * (1 - mZoom);
         }
-        return true;
+        //判断是否需要回弹
+        if (projectionMatrix[0] > MAX_SCALE || projectionMatrix[0] < 1) {
+            return true;
+        }else {
+            return false;
+        }
     }
 
     /**
@@ -383,15 +368,15 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
      * 求中点，用于缩放用
      */
     private void midPoint(PointF point, MotionEvent event) {
-        float x = event.getX(0) + event.getX(1);
-        float y = event.getY(0) + event.getY(1);
-        point.set(x / 2, y / 2);
+            float x = event.getX(0) + event.getX(1);
+            float y = event.getY(0) + event.getY(1);
+            point.set(x / 2, y / 2);
     }
 
     /**
      * 世界坐标换算成OpenGL坐标再计算距离,平移用的
      */
-    private float Xdistance(float p1, float p2) {
+    private float XDistance(float p1, float p2) {
         float glX1 = (p1 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
         float glX2 = (p2 / (float) Constant.mSurfaceViewWidth) * 2 - 1;
         return glX1 - glX2;
@@ -400,7 +385,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     /**
      * 世界坐标换算成OpenGL坐标再计算距离，平移用的
      */
-    private float Ydistance(float p1, float p2) {
+    private float YDistance(float p1, float p2) {
         float glY1 = 1 - (p1 / (float) Constant.mSurfaceViewHeight) * 2;
         float glY2 = 1 - (p2 / (float) Constant.mSurfaceViewHeight) * 2;
         return glY1 - glY2;
@@ -427,5 +412,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer, MainActivity.Gest
     }
 
     //===================手势部分end========================
+    //===================回弹部分start========================
 
+    /**
+     * 回弹
+     */
+    private void Rebound(){
+
+    }
+
+    //==================回弹部分end=========================
 }
