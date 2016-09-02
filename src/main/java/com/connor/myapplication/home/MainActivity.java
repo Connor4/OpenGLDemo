@@ -26,7 +26,7 @@ public class MainActivity extends Activity {
     private int mResourceId;
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
-    private boolean mReTravel = true;
+    private boolean mReTravel = true;//判断是否是回弹
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
