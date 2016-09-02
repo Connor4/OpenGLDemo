@@ -333,6 +333,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
             //缩放倍数
             mScaleX = mScaleY = mZoom;
             //平移距离
+            //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
+            //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价的距离
             mTranslateX = XDistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
                     projectionMatrix[0];
             mTranslateY = YDistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
