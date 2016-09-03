@@ -113,8 +113,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
 
             Matrix.setIdentityM(modelMatrix, 0);
-            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
+            Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
 
@@ -338,7 +338,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
             mTranslateX = XDistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
                     projectionMatrix[0];
             mTranslateY = YDistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
-                    projectionMatrix[0];
+                    projectionMatrix[5];
             //缩放补偿的偏移量
             mTranslateX += XOffset(mZoomMidPoint.x) * (1 - mZoom);
             mTranslateY += YOffset(mZoomMidPoint.y) * (1 - mZoom);
