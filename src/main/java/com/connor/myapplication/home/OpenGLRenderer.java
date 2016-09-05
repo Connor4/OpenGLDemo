@@ -395,21 +395,19 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     /**
      * 换算成OpenGL坐标，先换算坐标可以保留正负，不用再赋值正负
-     *
-     * @param p 世界坐标下的距离
-     * @return
      */
     private float XOffset(float p) {
+        float XScreen = (p / (float) Constant.mSurfaceViewWidth) * 2 - 1;
+        float XActual = (XScreen - projectionMatrix[12]) / projectionMatrix[0];
         return (p / (float) Constant.mSurfaceViewWidth) * 2 - 1;
     }
 
     /**
      * 同上
-     *
-     * @param p 世界坐标下的距离
-     * @return
      */
     private float YOffset(float p) {
+        float YScreen = 1 - (p / (float) Constant.mSurfaceViewHeight) * 2;
+        float YActual = (YScreen + projectionMatrix[13]) / projectionMatrix[0];
         return 1 - (p / (float) Constant.mSurfaceViewHeight) * 2;
     }
 

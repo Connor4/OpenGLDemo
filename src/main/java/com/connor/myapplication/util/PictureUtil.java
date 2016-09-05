@@ -1,7 +1,5 @@
 package com.connor.myapplication.util;
 
-import android.util.Log;
-
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.TextureHelper;
@@ -249,17 +247,20 @@ public class PictureUtil {
     }
 
     /**
-     * 改变画笔之后，需要重新设置当前的笔画间隔
+     * 改变画笔之后，需要重新设置当前的笔画间隔,重新设置偏移参数
      */
     public static void reSetStride() {
         calculateStride();
         calculateFBOStride();
+        projectionMatrix0 = 1;
+        projectionMatrix12 = 0;
+        projectionMatrix13 = 0;
     }
 
     /**
      * 修改缩放平移后偏移量
      * 对于投影矩阵，0,5位是X,Y方向上缩放量,12,13位是X，Y方向上平移量
-     * 做这个的思路：画一个（-1,1）的，再画一个（-2,2）的，两个都是原点作为中心。
+     * 做这个的思路：画一个（-1,1）的矩形，再画一个（-2,2）的矩形，两个都是原点作为中心。
      * 缩放的就取屏幕上的坐标（-0.5，-0.5），（-2,2）即放大的会显示在哪里（就是（-1,1）等比例的位置），
      * 如果要显示在点击位置（缩放的应该在（（-0.25，-0.25））），应该坐标怎么变换
      * 公式为：点击位置/ratio = 应该在的位置/1（即屏幕XY最大值）
