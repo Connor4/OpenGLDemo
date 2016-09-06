@@ -56,7 +56,6 @@ public class MainActivity extends Activity {
         rl.addView(mGLSurfaceView);
 
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
-        mGestureHandleCallback = mRenderer;
 
         mScaleDetector = new ScaleGestureDetector(MainActivity.this, mScaleListener);
         mScaleMartix.reset();
@@ -266,7 +265,6 @@ public class MainActivity extends Activity {
 
 //=====================手势部分start===========================
 
-    private GestureHandleCallback mGestureHandleCallback;
 
     private ScaleGestureDetector.OnScaleGestureListener mScaleListener = new ScaleGestureDetector
             .OnScaleGestureListener() {
@@ -279,7 +277,7 @@ public class MainActivity extends Activity {
             mScaleMartix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector
                     .getFocusY());
 
-            mGestureHandleCallback.handleDragGesture(mScaleMartix, scaleFactor);
+            mRenderer.handleDragGesture(mScaleMartix, scaleFactor);
             mGLSurfaceView.requestRender();
 
             return true;
@@ -296,11 +294,6 @@ public class MainActivity extends Activity {
         }
     };
 
-    public interface GestureHandleCallback {
-        boolean handleDragGesture(Matrix matrix, float scaleFactor);
-
-        boolean handlePinchGesture(MotionEvent event);
-    }
 
 
 //=====================手势部分end=========================
