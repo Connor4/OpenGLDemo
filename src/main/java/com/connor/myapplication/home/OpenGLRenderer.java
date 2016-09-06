@@ -5,7 +5,9 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
@@ -57,14 +59,15 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public boolean mDrawNext;
     public boolean mSavePic;
     //=======手势部分start======
-//    private PointF mDragMidPoint = new PointF();
-//    private PointF mLastDragMidPoint = new PointF();
-    private PointF mZoomDragMidPoint = new PointF();
-    private PointF mZoomLastDragMidPoint = new PointF();
+    private PointF mDragMidPoint = new PointF();
+    private PointF mLastDragMidPoint = new PointF();
+    //    private PointF mZoomDragMidPoint = new PointF();
+//    private PointF mZoomLastDragMidPoint = new PointF();
     private PointF mZoomMidPoint = new PointF();
     private float mNewDist = 0f, mOldDist = 0f;
     private float mZoom = 0f;
-    private float mTranslateX = 0, mTranslateY = 0, mScaleX = 1, mScaleY = 1;
+    private float mDragTranslateX = 0, mDragTranslateY = 0;
+    private float mZoomTranslateX = 0, mZoomTranslateY = 0, mScaleX = 1, mScaleY = 1;
 
     private final float[] projectionMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
@@ -113,11 +116,12 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
 
             Matrix.setIdentityM(modelMatrix, 0);
-            Matrix.translateM(modelMatrix, 0, mTranslateX, mTranslateY, 0);
+            Matrix.translateM(modelMatrix, 0, mDragTranslateX + mZoomTranslateX, mDragTranslateY
+                    + mZoomTranslateY, 0);
             Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
-
+            Log.d("TAG", "PRO  " + projectionMatrix[12] + "   ppp  " + projectionMatrix[13]);
             drawOnscreen();
         } else {
             if (mSavePic) {
@@ -281,12 +285,12 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mNewDist = 0;
         mOldDist = 0;
         mScaleX = mScaleY = 1;
-        mZoomDragMidPoint.x = mZoomLastDragMidPoint.x = 0;
-        mZoomDragMidPoint.y = mZoomLastDragMidPoint.y = 0;
+//        mZoomDragMidPoint.x = mZoomLastDragMidPoint.x = 0;
+//        mZoomDragMidPoint.y = mZoomLastDragMidPoint.y = 0;
         mZoomMidPoint.x = mZoomMidPoint.y = 0;
         //=======平移========
-//        mDragMidPoint.x = mDragMidPoint.y = 0;
-//        mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
+        mDragMidPoint.x = mDragMidPoint.y = 0;
+        mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
         //传递投影矩阵给这个工具类计算偏移量
         PictureUtil.projectionMatrix0 = projectionMatrix[0];
         PictureUtil.projectionMatrix12 = projectionMatrix[12];
@@ -317,38 +321,32 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     //===================手势部分start========================
 
-    //缩放部分未完成,需要继续做缩放得平移补偿,这个思路没作出来
-    public boolean handlePinchGesture(MotionEvent event) {
-        //缩放
-        mOldDist = mNewDist;
-        mNewDist = spacing(event);
-        mZoom = mNewDist / mOldDist;
+    public boolean handleDragGesture(MotionEvent event) {
         //平移
-        mZoomLastDragMidPoint.x = mZoomDragMidPoint.x;
-        mZoomLastDragMidPoint.y = mZoomDragMidPoint.y;
-        midPoint(mZoomDragMidPoint, event);
+        mLastDragMidPoint.x = mDragMidPoint.x;
+        mLastDragMidPoint.y = mDragMidPoint.y;
+        midPoint(mDragMidPoint, event);
 
-        if (mZoom != Float.POSITIVE_INFINITY) {//第一次mOldDist = 0时，mZoom会为infinity
-            midPoint(mZoomMidPoint, event);
-            //缩放倍数
-            mScaleX = mScaleY = mZoom;
+        if (mLastDragMidPoint.x != 0 && mLastDragMidPoint.y != 0) {
             //平移距离
             //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
             //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价的距离
-            mTranslateX = XDistance(mZoomDragMidPoint.x, mZoomLastDragMidPoint.x) /
-                    projectionMatrix[0];
-            mTranslateY = YDistance(mZoomDragMidPoint.y, mZoomLastDragMidPoint.y) /
-                    projectionMatrix[5];
-            //缩放补偿的偏移量
-            mTranslateX += XOffset(mZoomMidPoint.x) * (1 - mZoom);
-            mTranslateY += YOffset(mZoomMidPoint.y) * (1 - mZoom);
+//            mDragTranslateX = XDistance(mDragMidPoint.x, mLastDragMidPoint.x) /
+//                    projectionMatrix[0];
+//            mDragTranslateY = YDistance(mDragMidPoint.y, mLastDragMidPoint.y) /
+//                    projectionMatrix[5];
         }
-        //判断是否需要回弹
-        if (projectionMatrix[0] > MAX_SCALE || projectionMatrix[0] < 1) {
-            return true;
-        }else {
-            return false;
-        }
+        return true;
+    }
+
+
+    public boolean handlePinchGesture(ScaleGestureDetector detector) {
+        mScaleX = mScaleY = detector.getScaleFactor();
+        mZoomTranslateX = XOffset(detector.getFocusX(), mScaleX);
+        mZoomTranslateY = YOffset(detector.getFocusY(), mScaleY);
+       Log.d("TAG", " zoom  " + mZoomTranslateX + " zoom " + mZoomTranslateY);
+
+        return true;
     }
 
     /**
@@ -370,9 +368,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      * 求中点，用于缩放用
      */
     private void midPoint(PointF point, MotionEvent event) {
-            float x = event.getX(0) + event.getX(1);
-            float y = event.getY(0) + event.getY(1);
-            point.set(x / 2, y / 2);
+        float x = event.getX(0) + event.getX(1);
+        float y = event.getY(0) + event.getY(1);
+        point.set(x / 2, y / 2);
     }
 
     /**
@@ -394,21 +392,27 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * 换算成OpenGL坐标，先换算坐标可以保留正负，不用再赋值正负
+     * 换算成OpenGL坐标
      */
-    private float XOffset(float p) {
+    private float XOffset(float p, float scale) {
         float XScreen = (p / (float) Constant.mSurfaceViewWidth) * 2 - 1;
-        float XActual = (XScreen - projectionMatrix[12]) / projectionMatrix[0];
-        return (p / (float) Constant.mSurfaceViewWidth) * 2 - 1;
+        float XActual = XScreen - (XScreen - projectionMatrix[12]) / projectionMatrix[0] *
+                projectionMatrix[0]*scale;
+        Log.d("TAG", "X " + XScreen+ "  A "+ (XScreen - projectionMatrix[12]) / projectionMatrix[0] *
+                projectionMatrix[0]*scale);
+        return XActual;
     }
 
     /**
-     * 同上
+     * 同{@link #XOffset}
      */
-    private float YOffset(float p) {
+    private float YOffset(float p, float scale) {
         float YScreen = 1 - (p / (float) Constant.mSurfaceViewHeight) * 2;
-        float YActual = (YScreen + projectionMatrix[13]) / projectionMatrix[0];
-        return 1 - (p / (float) Constant.mSurfaceViewHeight) * 2;
+        float YActual = YScreen - (YScreen - projectionMatrix[13]) / projectionMatrix[5] *
+                projectionMatrix[5]*scale;
+        Log.d("TAG", "Y " +YScreen + "  B  "+ (YScreen - projectionMatrix[13]) / projectionMatrix[5] *
+                projectionMatrix[5]*scale);
+        return YActual;
     }
 
     //===================手势部分end========================
@@ -417,7 +421,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     /**
      * 回弹
      */
-    private void Rebound(){
+    private void Rebound() {
 
     }
 

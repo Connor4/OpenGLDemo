@@ -9,6 +9,7 @@ import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -23,6 +24,7 @@ import com.connor.myapplication.util.PictureUtil;
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
+    private ScaleGestureDetector mScaleDetector;
     private int mResourceId;
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
@@ -49,12 +51,14 @@ public class MainActivity extends Activity {
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.main);
         rl.addView(mGLSurfaceView);
 
+        mScaleDetector = new ScaleGestureDetector(MainActivity.this, mScaleListener);
+
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
 
         mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-
+               mScaleDetector.onTouchEvent(event);
                 if (event != null) {
 
                     final int action = MotionEventCompat.getActionMasked(event);
@@ -87,9 +91,9 @@ public class MainActivity extends Activity {
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
                                     .GESTURE_MODE_DRAGANDZOOM) {
-
-                                mRebound = mRenderer.handlePinchGesture(event);
-                                mGLSurfaceView.requestRender();
+                                mRenderer.handleDragGesture(event);
+//                             mRenderer.handlePinchGesture(event);
+//                                mGLSurfaceView.requestRender();
 
                             }
                             break;
@@ -141,6 +145,30 @@ public class MainActivity extends Activity {
         });
 
     }
+
+    private ScaleGestureDetector.OnScaleGestureListener mScaleListener = new ScaleGestureDetector
+            .OnScaleGestureListener() {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            float scaleFactor = detector.getScaleFactor();
+
+            if (Float.isNaN(scaleFactor) || Float.isInfinite(scaleFactor))
+                return false;
+
+            mRebound = mRenderer.handlePinchGesture(detector);
+            mGLSurfaceView.requestRender();
+
+            return true;
+        }
+
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
+            return true;
+        }
+
+        public void onScaleEnd(ScaleGestureDetector detector) {
+
+        }
+    };
 
     @Override
     protected void onResume() {
