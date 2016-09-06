@@ -25,17 +25,15 @@ public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
     private ScaleGestureDetector mScaleDetector;
-    private int mResourceId;
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
-    private boolean mIsScaling = false;//判断是否正在缩放
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Bundle bundle = this.getIntent().getExtras();
-        mResourceId = bundle.getInt("id");
+        int mResourceId = bundle.getInt("id");
 
         Constant.CURRENT_USE_TYPE = Constant.PAINT;
         Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
@@ -67,13 +65,11 @@ public class MainActivity extends Activity {
 
                     switch (action & MotionEvent.ACTION_MASK) {
                         case MotionEvent.ACTION_DOWN:
-                            if (!mIsScaling) {
-                                BezierUtil.releasePoints();//再清一次保证容器空了
-                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
+                            BezierUtil.releasePoints();//再清一次保证容器空了
+                            Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_NORMAL;
 
-                                ObjectUtil.setPointCoordinate(currentX, currentY);
-                                BezierUtil.addScreenPoint(currentX, currentY);//添加点，用于贝塞尔曲线
-                            }
+                            ObjectUtil.setPointCoordinate(currentX, currentY);
+                            BezierUtil.addScreenPoint(currentX, currentY);//添加点，用于贝塞尔曲线
 
                             break;
 
@@ -274,12 +270,10 @@ public class MainActivity extends Activity {
         }
 
         public boolean onScaleBegin(ScaleGestureDetector detector) {
-            mIsScaling = true;
             return true;
         }
 
         public void onScaleEnd(ScaleGestureDetector detector) {
-            mIsScaling = false;
         }
     };
     //=====================手势end==========================
@@ -287,7 +281,7 @@ public class MainActivity extends Activity {
     //=====================回弹start===========================
 
     /**
-     * 通过缩放回调结果判断是否回弹
+     * 判断是否回弹
      */
     private void checkRebound() {
 
