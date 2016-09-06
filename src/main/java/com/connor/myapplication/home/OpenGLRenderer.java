@@ -11,11 +11,13 @@ import android.view.ScaleGestureDetector;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
+import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.MosaicTextureShaderProgram;
 import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
+import com.connor.myapplication.util.ObjectUtil;
 import com.connor.myapplication.util.PictureUtil;
 import com.connor.myapplication.util.RendererUtil;
 import com.connor.myapplication.util.SaveUtil;
@@ -61,11 +63,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     //=======手势部分start======
     private PointF mDragMidPoint = new PointF();
     private PointF mLastDragMidPoint = new PointF();
-    //    private PointF mZoomDragMidPoint = new PointF();
-//    private PointF mZoomLastDragMidPoint = new PointF();
     private PointF mZoomMidPoint = new PointF();
-    private float mNewDist = 0f, mOldDist = 0f;
-    private float mZoom = 0f;
     private float mDragTranslateX = 0, mDragTranslateY = 0;
     private float mZoomTranslateX = 0, mZoomTranslateY = 0, mScaleX = 1, mScaleY = 1;
 
@@ -121,7 +119,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
             Matrix.scaleM(modelMatrix, 0, mScaleX, mScaleY, 0);
             Matrix.multiplyMM(temp, 0, projectionMatrix, 0, modelMatrix, 0);
             System.arraycopy(temp, 0, projectionMatrix, 0, temp.length);
-            Log.d("TAG", "PRO  " + projectionMatrix[12] + "   ppp  " + projectionMatrix[13]);
+
             drawOnscreen();
         } else {
             if (mSavePic) {
@@ -281,12 +279,6 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      */
     public void freeGestureStatus() {
         //=======缩放======
-        mZoom = 0;
-        mNewDist = 0;
-        mOldDist = 0;
-        mScaleX = mScaleY = 1;
-//        mZoomDragMidPoint.x = mZoomLastDragMidPoint.x = 0;
-//        mZoomDragMidPoint.y = mZoomLastDragMidPoint.y = 0;
         mZoomMidPoint.x = mZoomMidPoint.y = 0;
         //=======平移========
         mDragMidPoint.x = mDragMidPoint.y = 0;
@@ -321,7 +313,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     //===================手势部分start========================
 
-    public boolean handleDragGesture(MotionEvent event) {
+    public void handleDragGesture(MotionEvent event) {
         //平移
         mLastDragMidPoint.x = mDragMidPoint.x;
         mLastDragMidPoint.y = mDragMidPoint.y;
@@ -331,41 +323,24 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
             //平移距离
             //因为平移变换是针对模型矩阵变换，放大缩小之后移动就会因为手指移动距离跟屏幕上移动的距离不再对应
             //而显得手指移动的距离跟图片移动距离不同，所以除以投影矩阵中当前的缩放大小，变回等价的距离
-//            mDragTranslateX = XDistance(mDragMidPoint.x, mLastDragMidPoint.x) /
-//                    projectionMatrix[0];
-//            mDragTranslateY = YDistance(mDragMidPoint.y, mLastDragMidPoint.y) /
-//                    projectionMatrix[5];
+            mDragTranslateX = XDistance(mDragMidPoint.x, mLastDragMidPoint.x) /
+                    projectionMatrix[0];
+            mDragTranslateY = YDistance(mDragMidPoint.y, mLastDragMidPoint.y) /
+                    projectionMatrix[5];
         }
-        return true;
     }
 
 
-    public boolean handlePinchGesture(ScaleGestureDetector detector) {
+    public void handlePinchGesture(ScaleGestureDetector detector) {
         mScaleX = mScaleY = detector.getScaleFactor();
-        mZoomTranslateX = XOffset(detector.getFocusX(), mScaleX);
-        mZoomTranslateY = YOffset(detector.getFocusY(), mScaleY);
-       Log.d("TAG", " zoom  " + mZoomTranslateX + " zoom " + mZoomTranslateY);
+        mZoomTranslateX = XOffset(detector.getFocusX())*(1-mScaleX);
+        mZoomTranslateY = YOffset(detector.getFocusY())*(1-mScaleY);
 
-        return true;
     }
 
-    /**
-     * 求pointID0和1之间的距离
-     */
-    private float spacing(MotionEvent event) {
-        float x = 0;
-        float y = 0;
-        try {
-            x = event.getX(0) - event.getX(1);
-            y = event.getY(0) - event.getY(1);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        return (float) Math.sqrt(x * x + y * y);
-    }
 
     /**
-     * 求中点，用于缩放用
+     * 求中点,平移用
      */
     private void midPoint(PointF point, MotionEvent event) {
         float x = event.getX(0) + event.getX(1);
@@ -383,7 +358,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * 世界坐标换算成OpenGL坐标再计算距离，平移用的
+     * 同{@link #XDistance}
      */
     private float YDistance(float p1, float p2) {
         float glY1 = 1 - (p1 / (float) Constant.mSurfaceViewHeight) * 2;
@@ -392,26 +367,20 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     }
 
     /**
-     * 换算成OpenGL坐标
+     * 换算成OpenGL坐标,并且计算偏移量(方法为{@link com.connor.myapplication.util.PictureUtil#calculateOffset})
      */
-    private float XOffset(float p, float scale) {
+    private float XOffset(float p) {
         float XScreen = (p / (float) Constant.mSurfaceViewWidth) * 2 - 1;
-        float XActual = XScreen - (XScreen - projectionMatrix[12]) / projectionMatrix[0] *
-                projectionMatrix[0]*scale;
-        Log.d("TAG", "X " + XScreen+ "  A "+ (XScreen - projectionMatrix[12]) / projectionMatrix[0] *
-                projectionMatrix[0]*scale);
-        return XActual;
+        float XActual =  (XScreen - projectionMatrix[12]) / projectionMatrix[0];
+        return  XActual;
     }
 
     /**
      * 同{@link #XOffset}
      */
-    private float YOffset(float p, float scale) {
+    private float YOffset(float p) {
         float YScreen = 1 - (p / (float) Constant.mSurfaceViewHeight) * 2;
-        float YActual = YScreen - (YScreen - projectionMatrix[13]) / projectionMatrix[5] *
-                projectionMatrix[5]*scale;
-        Log.d("TAG", "Y " +YScreen + "  B  "+ (YScreen - projectionMatrix[13]) / projectionMatrix[5] *
-                projectionMatrix[5]*scale);
+        float YActual = (YScreen - projectionMatrix[13]) / projectionMatrix[5];
         return YActual;
     }
 
