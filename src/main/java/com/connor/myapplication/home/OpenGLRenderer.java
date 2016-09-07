@@ -313,6 +313,10 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     //===================手势部分start========================
 
+    /**
+     * 平移处理
+     * @param event
+     */
     public void handleDragGesture(MotionEvent event) {
         //平移
         mLastDragMidPoint.x = mDragMidPoint.x;
@@ -331,11 +335,15 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     }
 
 
+    /**
+     * 缩放处理，思路是另外一个android.graphic.matrix的postScale函数（基于某个点缩放，
+     * 处理就是缩放的同时按照一定比例平移）
+     * @param detector
+     */
     public void handlePinchGesture(ScaleGestureDetector detector) {
         mScaleX = mScaleY = detector.getScaleFactor();
         mZoomTranslateX = XOffset(detector.getFocusX())*(1-mScaleX);
         mZoomTranslateY = YOffset(detector.getFocusY())*(1-mScaleY);
-
     }
 
 
