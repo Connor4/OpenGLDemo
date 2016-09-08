@@ -17,7 +17,7 @@ public class RendererUtil {
      * 随机选择星星图案，生成纹理
      */
     public static int CreateChangeTexture(Context mContext) {
-        int mOtherTexture = 0;//选择0是错误的，0代表其他纹理
+        int mOtherTexture = -1;
         Random random = new Random();
         int result = random.nextInt(6) % (6 - 1 + 1) + 1;
         switch (result) {
