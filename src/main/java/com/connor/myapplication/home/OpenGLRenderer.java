@@ -111,7 +111,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAGANDZOOM) {
+        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
 
             Matrix.setIdentityM(modelMatrix, 0);
             Matrix.translateM(modelMatrix, 0, mDragTranslateX + mZoomTranslateX, mDragTranslateY

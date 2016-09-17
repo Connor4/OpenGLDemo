@@ -79,7 +79,7 @@ public class MainActivity extends Activity {
 
                         case MotionEvent.ACTION_MOVE:
                             if (mGestureFlag) {
-                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAGANDZOOM;
+                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAG;
                             }
 
                             if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_NORMAL) {
@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
                                 BezierUtil.addScreenPoint(currentX, currentY);
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
-                                    .GESTURE_MODE_DRAGANDZOOM) {
+                                    .GESTURE_MODE_DRAG) {
                                 mRenderer.handleDragGesture(event);
 
                             }
