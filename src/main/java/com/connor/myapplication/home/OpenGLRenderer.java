@@ -64,6 +64,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private PointF mDragMidPoint = new PointF();
     private PointF mLastDragMidPoint = new PointF();
     private PointF mZoomMidPoint = new PointF();
+    private PointF mZoomDragMidPoint = new PointF();
+    private PointF mZoomLastDragMidPoint = new PointF();
+    private float mNewDist = 0, mOldDist = 0, mZoom = 0;
     private float mDragTranslateX = 0, mDragTranslateY = 0;
     private float mZoomTranslateX = 0, mZoomTranslateY = 0, mScaleX = 1, mScaleY = 1;
 
@@ -111,7 +114,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 gl) {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_DRAG) {
+        if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_GESTURING) {
 
             Matrix.setIdentityM(modelMatrix, 0);
             Matrix.translateM(modelMatrix, 0, mDragTranslateX + mZoomTranslateX, mDragTranslateY
@@ -280,6 +283,9 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     public void freeGestureStatus() {
         //=======缩放======
         mZoomMidPoint.x = mZoomMidPoint.y = 0;
+        mZoomDragMidPoint.x = mZoomDragMidPoint.y = 0;
+        mZoomLastDragMidPoint.x = mZoomLastDragMidPoint.y = 0;
+        mOldDist = mNewDist = mZoom = 0;
         //=======平移========
         mDragMidPoint.x = mDragMidPoint.y = 0;
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
@@ -338,14 +344,34 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     /**
      * 缩放处理，思路是另外一个android.graphic.matrix的postScale函数（基于某个点缩放，
      * 处理就是缩放的同时按照一定比例平移）
-     * @param detector
      */
-    public void handlePinchGesture(ScaleGestureDetector detector) {
-        mScaleX = mScaleY = detector.getScaleFactor();
-        mZoomTranslateX = XOffset(detector.getFocusX())*(1-mScaleX);
-        mZoomTranslateY = YOffset(detector.getFocusY())*(1-mScaleY);
+    public void handlePinchGesture(MotionEvent event) {
+        mOldDist = mNewDist;
+        mNewDist = spacing(event);
+        mZoom = mNewDist / mOldDist;
+        midPoint(mZoomMidPoint, event);
+
+        if (mZoom != Float.POSITIVE_INFINITY){
+            mScaleX = mScaleY = mZoom;
+            mZoomTranslateX = XOffset(mZoomMidPoint.x) * (1 - mScaleX);
+            mZoomTranslateY = YOffset(mZoomMidPoint.y) * (1 - mScaleY);
+        }
     }
 
+    /**
+     * 求pointID0和1之间的距离
+     */
+    private float spacing(MotionEvent event) {
+        float x = 0;
+        float y = 0;
+        try {
+            x = event.getX(0) - event.getX(1);
+            y = event.getY(0) - event.getY(1);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+        return (float) Math.sqrt(x * x + y * y);
+    }
 
     /**
      * 求中点,平移用

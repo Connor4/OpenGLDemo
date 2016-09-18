@@ -24,7 +24,6 @@ import com.connor.myapplication.util.PictureUtil;
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
-    private ScaleGestureDetector mScaleDetector;
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
 
@@ -49,14 +48,12 @@ public class MainActivity extends Activity {
         RelativeLayout rl = (RelativeLayout) findViewById(R.id.main);
         rl.addView(mGLSurfaceView);
 
-        mScaleDetector = new ScaleGestureDetector(MainActivity.this, mScaleListener);
 
         ObjectUtil.getViewAndRenderer(mGLSurfaceView, mRenderer);
 
         mGLSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                mScaleDetector.onTouchEvent(event);
                 if (event != null) {
                     final int action = MotionEventCompat.getActionMasked(event);
 
@@ -79,7 +76,7 @@ public class MainActivity extends Activity {
 
                         case MotionEvent.ACTION_MOVE:
                             if (mGestureFlag) {
-                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_DRAG;
+                                Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GESTURING;
                             }
 
                             if (Constant.CURRENT_GESTURE_MODE == Constant.GESTURE_MODE_NORMAL) {
@@ -87,9 +84,10 @@ public class MainActivity extends Activity {
                                 BezierUtil.addScreenPoint(currentX, currentY);
 
                             } else if (Constant.CURRENT_GESTURE_MODE == Constant
-                                    .GESTURE_MODE_DRAG) {
+                                    .GESTURE_MODE_GESTURING) {
                                 mRenderer.handleDragGesture(event);
-
+                                mRenderer.handlePinchGesture(event);
+                                mGLSurfaceView.requestRender();
                             }
                             break;
 
@@ -253,30 +251,6 @@ public class MainActivity extends Activity {
         }
         return statusHeight;
     }
-
-    //=====================手势start==========================
-    private ScaleGestureDetector.OnScaleGestureListener mScaleListener = new ScaleGestureDetector
-            .OnScaleGestureListener() {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            float scaleFactor = detector.getScaleFactor();
-            if (Float.isNaN(scaleFactor) || Float.isInfinite(scaleFactor))
-                return false;
-
-            mRenderer.handlePinchGesture(detector);
-            mGLSurfaceView.requestRender();
-
-            return true;
-        }
-
-        public boolean onScaleBegin(ScaleGestureDetector detector) {
-            return true;
-        }
-
-        public void onScaleEnd(ScaleGestureDetector detector) {
-        }
-    };
-    //=====================手势end==========================
 
     //=====================回弹start===========================
 
