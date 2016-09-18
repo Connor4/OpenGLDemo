@@ -43,7 +43,7 @@ public class Group extends Mesh {
                 program.useProgram();
                 program.setUniforms(resourceId, pointId);
                 object = (FBOEffectPoints)mOppositeContainer.pollFirst();
-                object.bindData2(program);
+                object.bindData(program);
                 object.draw();
                 object = null;
             }

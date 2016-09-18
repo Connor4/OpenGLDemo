@@ -42,4 +42,8 @@ public class TextureShaderProgram extends ShaderProgram {
     public int getTextureCoordinatesAttributeLocation() {
         return aTextureCoordinatesLocation;
     }
+
+    public int getPointTextureCoordinatesAttributeLocation() {
+        return 0;
+    }
 }

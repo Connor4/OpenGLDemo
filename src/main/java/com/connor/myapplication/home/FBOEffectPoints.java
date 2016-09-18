@@ -3,6 +3,7 @@ package com.connor.myapplication.home;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.data.VertexArray;
 import com.connor.myapplication.program.MosaicTextureShaderProgram;
+import com.connor.myapplication.program.ShaderProgram;
 import com.connor.myapplication.util.PictureUtil;
 
 import static android.opengl.GLES20.GL_TRIANGLE_FAN;
@@ -26,7 +27,7 @@ public class FBOEffectPoints extends Mesh {
         vertexArray = new VertexArray(vertices);
     }
 
-    public void bindData2(MosaicTextureShaderProgram textureProgram) {
+    public void bindData(ShaderProgram textureProgram) {
         vertexArray.setVertexAttribPointer(
                 0,
                 textureProgram.getPositionAttributeLocation(),

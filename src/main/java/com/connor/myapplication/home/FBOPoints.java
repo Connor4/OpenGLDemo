@@ -5,6 +5,7 @@ import android.support.v7.widget.SwitchCompat;
 import com.connor.myapplication.data.Constant;
 import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.data.VertexArray;
+import com.connor.myapplication.program.ShaderProgram;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.util.PictureUtil;
 
@@ -38,7 +39,7 @@ public class FBOPoints extends Mesh {
         vertexArray = new VertexArray(vertices);
     }
 
-    public void bindData(TextureShaderProgram textureProgram) {
+    public void bindData(ShaderProgram textureProgram) {
         vertexArray.setVertexAttribPointer(
                 0,
                 textureProgram.getPositionAttributeLocation(),

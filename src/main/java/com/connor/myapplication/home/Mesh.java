@@ -1,7 +1,6 @@
 package com.connor.myapplication.home;
 
-import com.connor.myapplication.program.MosaicTextureShaderProgram;
-import com.connor.myapplication.program.TextureShaderProgram;
+import com.connor.myapplication.program.ShaderProgram;
 
 /**
  * Created by meitu on 2016/7/8.
@@ -9,8 +8,7 @@ import com.connor.myapplication.program.TextureShaderProgram;
 abstract class Mesh {
     public void draw() {};
 
-    public void bindData(TextureShaderProgram program) {};
+    public void bindData(ShaderProgram program) {};
 
-    public void bindData2(MosaicTextureShaderProgram program) {};
 
 }
