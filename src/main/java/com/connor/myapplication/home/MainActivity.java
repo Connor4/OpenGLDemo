@@ -9,7 +9,6 @@ import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -24,6 +23,10 @@ import com.connor.myapplication.util.PictureUtil;
 public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
+    //=======回弹部分start=====
+    private Rebound rebound;
+    private static final float MAX_SCALE = 4.0f;//最大缩放倍数
+    //=======回弹部分end=====
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
 
@@ -107,12 +110,14 @@ public class MainActivity extends Activity {
                                     @Override
                                     public void run() {
                                         mRenderer.freeGestureStatus();
+                                        checkRebound();
                                     }
                                 });
                             }
 
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             BezierUtil.releasePoints();
+
 
                             break;
 
@@ -121,10 +126,12 @@ public class MainActivity extends Activity {
                                 @Override
                                 public void run() {
                                     mRenderer.freeGestureStatus();
+                                    checkRebound();
                                 }
                             });
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             mGestureFlag = false;
+
 
                             break;
 
@@ -258,7 +265,103 @@ public class MainActivity extends Activity {
      * 判断是否回弹
      */
     private void checkRebound() {
+        rebound = new Rebound();
+        if (rebound.isRunning) return;
 
+        //是否在缩放状态下需要回弹
+        if (PictureUtil.projectionMatrix0 < 1) {
+            rebound.withScale();
+        } else if (PictureUtil.projectionMatrix0 > MAX_SCALE) {
+            rebound.withScale();
+        }
+
+        //是否需要在越过边界状态下回弹，这种只有放大
+        if (PictureUtil.projectionMatrix0 > 1) {
+            if (isNeedTranslate()) {
+                rebound.withTranslate();
+            }
+        }
+
+        rebound.startRebound();
+    }
+
+    /**
+     * 判断是否在放大状态时需要回弹
+     *
+     * @return 是否需要
+     */
+    private boolean isNeedTranslate() {
+        float Scale = PictureUtil.projectionMatrix0;
+        float XTranslate = Math.abs(PictureUtil.projectionMatrix12);
+        float YTranslate = Math.abs(PictureUtil.projectionMatrix13);
+        float Boundary = Math.abs(Scale - 1);//XY能偏移最大而不需要回弹的边界
+
+        if (XTranslate - Boundary > 0) {
+            return true;
+        }
+
+        if (YTranslate - Boundary > 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 回弹线程
+     */
+    private class Rebound extends Thread {
+        boolean isRunning;
+        boolean isFinished;
+
+        @Override
+        public void run() {
+
+        }
+
+        void withScale() {
+            for (; ; ) {
+                if (!isFinished) {
+                    mGLSurfaceView.queueEvent(new Runnable() {
+                        @Override
+                        public void run() {
+                            isFinished = mRenderer.reboundWithScale();
+                            mGLSurfaceView.requestRender();
+                        }
+                    });
+                }
+                isRunning = false;
+                break;
+            }
+
+        }
+
+        void withTranslate() {
+            for (; ; ) {
+                if (!isFinished) {
+                    mGLSurfaceView.queueEvent(new Runnable() {
+                        @Override
+                        public void run() {
+                            isFinished = mRenderer.reboundWithTranslate();
+                            mGLSurfaceView.requestRender();
+                        }
+                    });
+                }
+                isRunning = false;
+                break;
+            }
+
+        }
+
+        void startRebound() {
+            isRunning = true;
+            this.start();
+        }
+
+        void stopRebound() {
+            isRunning = false;
+            this.interrupt();
+        }
     }
     //=====================回弹end===========================
 

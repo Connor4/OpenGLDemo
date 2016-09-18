@@ -74,9 +74,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private final float[] modelMatrix = new float[16];
     private final float[] temp = new float[16];
     //=======手势部分end======
-    //=======回弹部分start=====
-    private static final float MAX_SCALE = 4.0f;//最大缩放倍数
-    //=======回弹部分end=====
+
 
     public OpenGLRenderer(Context mContext, int resourceId) {
         this.mContext = mContext;
@@ -420,12 +418,14 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     //===================手势部分end========================
     //===================回弹部分start========================
+    public boolean reboundWithScale() {
+        Log.d("TAG", "HAHA");
+        return true;
+    }
 
-    /**
-     * 回弹
-     */
-    private void Rebound() {
-
+    public boolean reboundWithTranslate(){
+        Log.d("TAG", "oooooo");
+        return true;
     }
 
     //==================回弹部分end=========================
