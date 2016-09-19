@@ -23,7 +23,7 @@ public class Constant {
     /**
      * 记录当前otherProgram序号,删除时使用
      */
-    public static int CURRENT_OTHER_PROGRAM_INDEX ;
+    public static int CURRENT_OTHER_PROGRAM_INDEX;
     /**
      * 记录当前fireworkprogram需要，删除时使用
      */
@@ -31,11 +31,11 @@ public class Constant {
     /**
      * surfaceView宽度
      */
-    public static int mSurfaceViewWidth ;
+    public static int mSurfaceViewWidth;
     /**
      * surfaceView高度
      */
-    public static int mSurfaceViewHeight ;
+    public static int mSurfaceViewHeight;
     /**
      * 点击区域宽度
      */

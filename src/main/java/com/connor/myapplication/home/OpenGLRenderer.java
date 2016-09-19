@@ -5,19 +5,15 @@ import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.util.Log;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 
 import com.connor.myapplication.R;
 import com.connor.myapplication.data.Constant;
-import com.connor.myapplication.data.PointBean;
 import com.connor.myapplication.program.MosaicTextureShaderProgram;
 import com.connor.myapplication.program.TextureHelper;
 import com.connor.myapplication.program.TextureShaderProgram;
 import com.connor.myapplication.program.TraceTextureShaderProgram;
 import com.connor.myapplication.util.FBOArrayUtil;
-import com.connor.myapplication.util.ObjectUtil;
 import com.connor.myapplication.util.PictureUtil;
 import com.connor.myapplication.util.RendererUtil;
 import com.connor.myapplication.util.SaveUtil;
@@ -74,6 +70,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private final float[] modelMatrix = new float[16];
     private final float[] temp = new float[16];
     //=======手势部分end======
+    //=======回弹部分start=====
+    //=======回弹部分end=====
 
 
     public OpenGLRenderer(Context mContext, int resourceId) {
@@ -284,9 +282,12 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mZoomDragMidPoint.x = mZoomDragMidPoint.y = 0;
         mZoomLastDragMidPoint.x = mZoomLastDragMidPoint.y = 0;
         mOldDist = mNewDist = mZoom = 0;
+        mScaleX = mScaleY = 1;
+        mZoomTranslateX = mZoomTranslateY = 0;
         //=======平移========
         mDragMidPoint.x = mDragMidPoint.y = 0;
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
+        mDragTranslateX = mDragTranslateY = 0;
         //传递投影矩阵给这个工具类计算偏移量
         PictureUtil.projectionMatrix0 = projectionMatrix[0];
         PictureUtil.projectionMatrix12 = projectionMatrix[12];
@@ -319,6 +320,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     /**
      * 平移处理
+     *
      * @param event
      */
     public void handleDragGesture(MotionEvent event) {
@@ -349,7 +351,7 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mZoom = mNewDist / mOldDist;
         midPoint(mZoomMidPoint, event);
 
-        if (mZoom != Float.POSITIVE_INFINITY){
+        if (mZoom != Float.POSITIVE_INFINITY) {
             mScaleX = mScaleY = mZoom;
             mZoomTranslateX = XOffset(mZoomMidPoint.x) * (1 - mScaleX);
             mZoomTranslateY = YOffset(mZoomMidPoint.y) * (1 - mScaleY);
@@ -403,8 +405,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
      */
     private float XOffset(float p) {
         float XScreen = (p / (float) Constant.mSurfaceViewWidth) * 2 - 1;
-        float XActual =  (XScreen - projectionMatrix[12]) / projectionMatrix[0];
-        return  XActual;
+        float XActual = (XScreen - projectionMatrix[12]) / projectionMatrix[0];
+        return XActual;
     }
 
     /**
@@ -418,15 +420,70 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     //===================手势部分end========================
     //===================回弹部分start========================
-    public boolean reboundWithScale() {
-        Log.d("TAG", "HAHA");
-        return true;
+    public boolean both(int type) {
+        boolean Scale = false;
+        boolean Translate = false;
+        if (!Scale) Scale = reboundWithScale(type);
+        if (!Translate) Translate = reboundWithTranslate();
+
+        return Scale && Translate;
     }
 
-    public boolean reboundWithTranslate(){
-        Log.d("TAG", "oooooo");
-        return true;
+
+    public boolean reboundWithScale(int type) {
+        switch (type) {
+            case 1://放大,从当前到1
+                startScale(projectionMatrix[0], 1f);
+                if (projectionMatrix[0] >= 1) return true;
+                break;
+            case 2://缩小,从当前到Max
+                startScale(projectionMatrix[0], 2.5f);
+                if (projectionMatrix[0] <= 2.5) return true;
+                break;
+            default:
+                break;
+        }
+        return false;
     }
+
+    private void startScale(float from, float to) {
+        float dis = from - to;
+        float step = -dis / dis * -0.1f;
+        mScaleX = 1 + step;
+        mScaleY = 1 + step;
+    }
+
+    public boolean reboundWithTranslate() {
+        boolean isXFinished = false;
+        boolean isYFinished = false;
+        if (!isXFinished) isXFinished = startXTranslate();
+        if (!isYFinished) isYFinished = startYTranslate();
+        if (isXFinished && isYFinished) return true;
+        return false;
+    }
+
+    private boolean startXTranslate() {
+        float gap;
+        float Scale = projectionMatrix[0];
+        float XTranslate = projectionMatrix[12];
+        float Boundary = Math.abs(Scale - 1);//XY能偏移最大而不需要回弹的边界
+        if (Scale > 2.5) {
+            gap = XTranslate - Boundary;
+
+        } else if (Scale < 1) {
+
+        }
+
+        return false;
+    }
+
+    private boolean startYTranslate() {
+        float Scale = projectionMatrix[5];
+        float YTranslate = projectionMatrix[13];
+        float Boundary = Math.abs(Scale - 1);//XY能偏移最大而不需要回弹的边界
+        return false;
+    }
+
 
     //==================回弹部分end=========================
 }

@@ -24,8 +24,7 @@ public class MainActivity extends Activity {
     private static GLSurfaceView mGLSurfaceView;
     private static OpenGLRenderer mRenderer;
     //=======回弹部分start=====
-    private Rebound rebound;
-    private static final float MAX_SCALE = 4.0f;//最大缩放倍数
+    private Rebound mRebound;
     //=======回弹部分end=====
 
     private boolean mGestureFlag = false;//是否出现手势操作判断
@@ -106,29 +105,19 @@ public class MainActivity extends Activity {
                             }
 
                             if (mGestureFlag) {
-                                mGLSurfaceView.queueEvent(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mRenderer.freeGestureStatus();
-                                        checkRebound();
-                                    }
-                                });
+                                mRenderer.freeGestureStatus();
+                                checkRebound();
                             }
 
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             BezierUtil.releasePoints();
 
-
                             break;
 
                         case MotionEvent.ACTION_POINTER_UP:
-                            mGLSurfaceView.queueEvent(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mRenderer.freeGestureStatus();
-                                    checkRebound();
-                                }
-                            });
+                            mRenderer.freeGestureStatus();
+                            checkRebound();
+
                             Constant.CURRENT_GESTURE_MODE = Constant.GESTURE_MODE_GONE;
                             mGestureFlag = false;
 
@@ -265,24 +254,29 @@ public class MainActivity extends Activity {
      * 判断是否回弹
      */
     private void checkRebound() {
-        rebound = new Rebound();
-        if (rebound.isRunning) return;
+        boolean canRun = false;
+        mRebound = new Rebound();
+        if (mRebound.isRunning) return;
 
         //是否在缩放状态下需要回弹
-        if (PictureUtil.projectionMatrix0 < 1) {
-            rebound.withScale();
-        } else if (PictureUtil.projectionMatrix0 > MAX_SCALE) {
-            rebound.withScale();
-        }
-
-        //是否需要在越过边界状态下回弹，这种只有放大
-        if (PictureUtil.projectionMatrix0 > 1) {
+        if (PictureUtil.projectionMatrix0 < 1.0) {//小于原图
+            mRebound.withScale(1);
+            mRebound.withTranslate();
+            canRun = true;
+        } else if (PictureUtil.projectionMatrix0 > 2.5) {//放大倍数大于2.5倍
+            mRebound.withScale(2);
+            mRebound.withTranslate();
+            canRun = true;
+        } else if (PictureUtil.projectionMatrix0 > 1) { //是否需要在越过边界状态下回弹，这种只有放大
             if (isNeedTranslate()) {
-                rebound.withTranslate();
+                mRebound.withTranslate();
+                canRun = true;
             }
         }
 
-        rebound.startRebound();
+        if (canRun) {
+            mRebound.startRebound();
+        }
     }
 
     /**
@@ -312,45 +306,41 @@ public class MainActivity extends Activity {
      */
     private class Rebound extends Thread {
         boolean isRunning;
-        boolean isFinished;
+        boolean isScaleFinished;
+        boolean isTranslateFinished;
 
         @Override
         public void run() {
-
+//            for (; ; ) {
+//                if (isScaleFinished && isTranslateFinished) {
+//                    stopRebound();
+//                    break;
+//                }
+//            }
         }
 
-        void withScale() {
+        void withScale(final int type) {
             for (; ; ) {
-                if (!isFinished) {
-                    mGLSurfaceView.queueEvent(new Runnable() {
-                        @Override
-                        public void run() {
-                            isFinished = mRenderer.reboundWithScale();
-                            mGLSurfaceView.requestRender();
-                        }
-                    });
-                }
-                isRunning = false;
-                break;
-            }
+                isScaleFinished = mRenderer.both(type);
+                mGLSurfaceView.requestRender();
 
+
+                if (isScaleFinished) {
+                    break;
+                }
+
+            }
         }
 
         void withTranslate() {
             for (; ; ) {
-                if (!isFinished) {
-                    mGLSurfaceView.queueEvent(new Runnable() {
-                        @Override
-                        public void run() {
-                            isFinished = mRenderer.reboundWithTranslate();
-                            mGLSurfaceView.requestRender();
-                        }
-                    });
-                }
-                isRunning = false;
-                break;
-            }
+                isTranslateFinished = mRenderer.reboundWithTranslate();
+                mGLSurfaceView.requestRender();
 
+                if (isTranslateFinished) {
+                    break;
+                }
+            }
         }
 
         void startRebound() {
