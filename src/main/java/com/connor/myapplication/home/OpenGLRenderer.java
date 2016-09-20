@@ -290,6 +290,13 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         mDragMidPoint.x = mDragMidPoint.y = 0;
         mLastDragMidPoint.x = mLastDragMidPoint.y = 0;
         mDragTranslateX = mDragTranslateY = 0;
+        passMatrixData();
+    }
+
+    /**
+     * 传递当前投影矩阵给那个工具类，做画笔位置匹配
+     */
+    public void passMatrixData() {
         //传递投影矩阵给这个工具类计算偏移量
         PictureUtil.projectionMatrix0 = projectionMatrix[0];
         PictureUtil.projectionMatrix12 = projectionMatrix[12];
@@ -459,8 +466,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
                 return true;
             }
         } else if (dis > 0) {
-            projectionMatrix[0] += -step*10;
-            projectionMatrix[5] += -step*10;
+            projectionMatrix[0] += -step * 10;//我也不知道为什么要乘以10，但是不乘看起来就很慢
+            projectionMatrix[5] += -step * 10;
 
             if (projectionMatrix[0] <= MAX_SCALE) {
                 projectionMatrix[0] = MAX_SCALE;
@@ -477,25 +484,32 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         if (!isXFinished) isXFinished = startXTranslate();
         if (!isYFinished) isYFinished = startYTranslate();
         if (isXFinished && isYFinished) return true;
-        return true;
+        return false;
     }
 
     private boolean startXTranslate() {
-        float gap;
-        float step;
         float Scale = projectionMatrix[0];
         float XTranslate = projectionMatrix[12];
         float Boundary = Math.abs(Scale - 1);//XY能偏移最大而不需要回弹的边界
-        if (Scale > 2.5) {
-            gap = XTranslate - Boundary;
-            step = -gap / gap * -0.1f;
-            mDragTranslateX = step;
-            if (projectionMatrix[12] == 0) {
-
+        if (Scale <= 1) {//回归到偏移为0
+            if (XTranslate > 0) {
+                projectionMatrix[12] -= 0.01f;
+                if (projectionMatrix[12] < 0) {
+                    projectionMatrix[12] = 0;
+                    return true;
+                }
+            } else {
+                projectionMatrix[12] += 0.01f;
+                if (projectionMatrix[12] > 0) {
+                    projectionMatrix[12] = 0;
+                    return true;
+                }
             }
-        } else if (Scale < 1) {
+
+        } else if (Scale > 1) {//回归到偏移为Boundary
 
         }
+
 
         return false;
     }
@@ -504,6 +518,24 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         float Scale = projectionMatrix[5];
         float YTranslate = projectionMatrix[13];
         float Boundary = Math.abs(Scale - 1);//XY能偏移最大而不需要回弹的边界
+        if (Scale <= 1) {//回归到偏移为0
+            if (YTranslate > 0) {
+                projectionMatrix[13] -= 0.01f;
+                if (projectionMatrix[13] < 0) {
+                    projectionMatrix[13] = 0;
+                    return true;
+                }
+            } else {
+                projectionMatrix[13] += 0.01f;
+                if (projectionMatrix[13] > 0) {
+                    projectionMatrix[13] = 0;
+                    return true;
+                }
+            }
+
+        } else if (Scale > 1) {//回归到偏移为Boundary
+
+        }
         return false;
     }
 

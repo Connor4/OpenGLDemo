@@ -7,6 +7,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.support.v4.view.MotionEventCompat;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -259,18 +260,20 @@ public class MainActivity extends Activity {
         if (mRebound.isRunning) return;
 
         //是否在缩放状态下需要回弹
-        if (PictureUtil.projectionMatrix0 < 1.0 || PictureUtil.projectionMatrix0>2.5) {//小于原图或者放大倍数大于2.5倍
-            mRebound.withScale();
-            mRebound.withTranslate();
+        if (PictureUtil.projectionMatrix0 < 1.0) {
+            mRebound.Scale();
+            mRebound.Translate();
             canRun = true;
-        } /*else if (PictureUtil.projectionMatrix0 > 2.5) {//
-            mRebound.withScale(2);
-            mRebound.withTranslate();
+        } else if (PictureUtil.projectionMatrix0 > 2.5) {//小于原图或者放大倍数大于2.5倍
+            mRebound.Scale();
+            if (isNeedTranslate()) {
+                mRebound.Translate();
+            }
             canRun = true;
-        } */else if (PictureUtil.projectionMatrix0 > 1.0 && PictureUtil.projectionMatrix0 <= 2.5) {
+        } else if (PictureUtil.projectionMatrix0 > 1.0 && PictureUtil.projectionMatrix0 <= 2.5) {
             //放大倍数在1-2.5之间，只需要移动边界
             if (isNeedTranslate()) {
-                mRebound.withTranslate();
+                mRebound.Translate();
                 canRun = true;
             }
         }
@@ -307,6 +310,8 @@ public class MainActivity extends Activity {
      */
     private class Rebound extends Thread {
         boolean isRunning;
+        boolean isScale;
+        boolean isTranslate;
         boolean isScaleFinished;
         boolean isTranslateFinished;
 
@@ -320,9 +325,22 @@ public class MainActivity extends Activity {
 //            }
         }
 
-        void withScale() {
+        public void Scale() {
+            isScale = true;
+        }
+
+        public void Translate() {
+            isTranslate = true;
+        }
+
+        void Fun() {
             for (; ; ) {
-                isScaleFinished = mRenderer.reboundWithScale();
+                if (isScale)
+                   isScaleFinished = mRenderer.reboundWithScale();
+                if (isTranslate)
+                    isTranslateFinished = mRenderer.reboundWithTranslate();
+
+                mRenderer.passMatrixData();
                 mGLSurfaceView.requestRender();
 
                 try {
@@ -331,19 +349,7 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
 
-                if (isScaleFinished) {
-                    break;
-                }
-
-            }
-        }
-
-        void withTranslate() {
-            for (; ; ) {
-                isTranslateFinished = mRenderer.reboundWithTranslate();
-                mGLSurfaceView.requestRender();
-
-                if (isTranslateFinished) {
+                if (isScaleFinished && isTranslateFinished) {
                     break;
                 }
             }
@@ -351,6 +357,7 @@ public class MainActivity extends Activity {
 
         void startRebound() {
             isRunning = true;
+            this.Fun();
             this.start();
         }
 
