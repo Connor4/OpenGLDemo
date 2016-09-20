@@ -71,6 +71,8 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
     private final float[] temp = new float[16];
     //=======手势部分end======
     //=======回弹部分start=====
+    private static final float MAX_SCALE = 2.5f;
+    private static final float ORIGIN_SCALE = 1.0f;
     //=======回弹部分end=====
 
 
@@ -420,37 +422,53 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
 
     //===================手势部分end========================
     //===================回弹部分start========================
-    public boolean both(int type) {
+    public boolean reboundWithBothWay() {
         boolean Scale = false;
         boolean Translate = false;
-        if (!Scale) Scale = reboundWithScale(type);
+        if (!Scale) Scale = reboundWithScale();
         if (!Translate) Translate = reboundWithTranslate();
 
         return Scale && Translate;
     }
 
 
-    public boolean reboundWithScale(int type) {
-        switch (type) {
-            case 1://放大,从当前到1
-                startScale(projectionMatrix[0], 1f);
-                if (projectionMatrix[0] >= 1) return true;
-                break;
-            case 2://缩小,从当前到Max
-                startScale(projectionMatrix[0], 2.5f);
-                if (projectionMatrix[0] <= 2.5) return true;
-                break;
-            default:
-                break;
+    public boolean reboundWithScale() {
+        boolean isScaled = false;
+        if (projectionMatrix[0] < ORIGIN_SCALE) {//倍数小于1
+            isScaled = startScale(projectionMatrix[0], ORIGIN_SCALE);
+            if (isScaled) return true;
+        } else if (projectionMatrix[0] > MAX_SCALE) {//倍数大于2.5
+            isScaled = startScale(projectionMatrix[0], MAX_SCALE);
+            if (isScaled) return true;
+        } else {
+            return true;
         }
         return false;
     }
 
-    private void startScale(float from, float to) {
+    private boolean startScale(float from, float to) {
         float dis = from - to;
-        float step = -dis / dis * -0.1f;
-        mScaleX = 1 + step;
-        mScaleY = 1 + step;
+        float step = 0.01f;
+        if (dis < 0) {
+            projectionMatrix[0] += step;
+            projectionMatrix[5] += step;
+
+            if (projectionMatrix[0] >= ORIGIN_SCALE) {
+                projectionMatrix[0] = ORIGIN_SCALE;
+                projectionMatrix[5] = ORIGIN_SCALE;
+                return true;
+            }
+        } else if (dis > 0) {
+            projectionMatrix[0] += -step*10;
+            projectionMatrix[5] += -step*10;
+
+            if (projectionMatrix[0] <= MAX_SCALE) {
+                projectionMatrix[0] = MAX_SCALE;
+                projectionMatrix[5] = MAX_SCALE;
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean reboundWithTranslate() {
@@ -459,17 +477,22 @@ public class OpenGLRenderer implements GLSurfaceView.Renderer {
         if (!isXFinished) isXFinished = startXTranslate();
         if (!isYFinished) isYFinished = startYTranslate();
         if (isXFinished && isYFinished) return true;
-        return false;
+        return true;
     }
 
     private boolean startXTranslate() {
         float gap;
+        float step;
         float Scale = projectionMatrix[0];
         float XTranslate = projectionMatrix[12];
         float Boundary = Math.abs(Scale - 1);//XY能偏移最大而不需要回弹的边界
         if (Scale > 2.5) {
             gap = XTranslate - Boundary;
+            step = -gap / gap * -0.1f;
+            mDragTranslateX = step;
+            if (projectionMatrix[12] == 0) {
 
+            }
         } else if (Scale < 1) {
 
         }

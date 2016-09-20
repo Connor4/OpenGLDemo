@@ -259,15 +259,16 @@ public class MainActivity extends Activity {
         if (mRebound.isRunning) return;
 
         //是否在缩放状态下需要回弹
-        if (PictureUtil.projectionMatrix0 < 1.0) {//小于原图
-            mRebound.withScale(1);
+        if (PictureUtil.projectionMatrix0 < 1.0 || PictureUtil.projectionMatrix0>2.5) {//小于原图或者放大倍数大于2.5倍
+            mRebound.withScale();
             mRebound.withTranslate();
             canRun = true;
-        } else if (PictureUtil.projectionMatrix0 > 2.5) {//放大倍数大于2.5倍
+        } /*else if (PictureUtil.projectionMatrix0 > 2.5) {//
             mRebound.withScale(2);
             mRebound.withTranslate();
             canRun = true;
-        } else if (PictureUtil.projectionMatrix0 > 1) { //是否需要在越过边界状态下回弹，这种只有放大
+        } */else if (PictureUtil.projectionMatrix0 > 1.0 && PictureUtil.projectionMatrix0 <= 2.5) {
+            //放大倍数在1-2.5之间，只需要移动边界
             if (isNeedTranslate()) {
                 mRebound.withTranslate();
                 canRun = true;
@@ -319,11 +320,16 @@ public class MainActivity extends Activity {
 //            }
         }
 
-        void withScale(final int type) {
+        void withScale() {
             for (; ; ) {
-                isScaleFinished = mRenderer.both(type);
+                isScaleFinished = mRenderer.reboundWithScale();
                 mGLSurfaceView.requestRender();
 
+                try {
+                    sleep(3);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
 
                 if (isScaleFinished) {
                     break;
